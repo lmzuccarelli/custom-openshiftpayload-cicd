@@ -1,0 +1,16 @@
+
+Kind: TaskRun
+apiVersion: 0.0.1
+metadata:
+  name: taskrun-cluster-update-keys
+spec:
+  taskRef:  custom-openshiftbuild-task
+  parameters:
+    - name: repository-url
+      value: 'https://github.com/openshift/cluster-update-keys'
+    - name: repository-name
+      value: 'cluster-update-keys'
+    - name: branch
+      value: 'master'
+    - name: dockerfile
+      value: 'Dockerfile.ocp'

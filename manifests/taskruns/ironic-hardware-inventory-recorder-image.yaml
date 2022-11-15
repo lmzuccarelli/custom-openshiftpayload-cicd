@@ -1,0 +1,16 @@
+
+Kind: TaskRun
+apiVersion: 0.0.1
+metadata:
+  name: taskrun-ironic-hardware-inventory-recorder-image
+spec:
+  taskRef:  custom-openshiftbuild-task
+  parameters:
+    - name: repository-url
+      value: 'https://github.com/openshift/ironic-hardware-inventory-recorder-image'
+    - name: repository-name
+      value: 'ironic-hardware-inventory-recorder-image'
+    - name: branch
+      value: 'master'
+    - name: dockerfile
+      value: 'Dockerfile.ocp'

@@ -1,0 +1,16 @@
+
+Kind: TaskRun
+apiVersion: 0.0.1
+metadata:
+  name: taskrun-ibm-vpc-block-csi-driver-operator
+spec:
+  taskRef:  custom-openshiftbuild-task
+  parameters:
+    - name: repository-url
+      value: 'https://github.com/openshift/ibm-vpc-block-csi-driver-operator'
+    - name: repository-name
+      value: 'ibm-vpc-block-csi-driver-operator'
+    - name: branch
+      value: 'master'
+    - name: dockerfile
+      value: 'Dockerfile.ocp'

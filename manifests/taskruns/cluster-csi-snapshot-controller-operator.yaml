@@ -1,0 +1,16 @@
+
+Kind: TaskRun
+apiVersion: 0.0.1
+metadata:
+  name: taskrun-cluster-csi-snapshot-controller-operator
+spec:
+  taskRef:  custom-openshiftbuild-task
+  parameters:
+    - name: repository-url
+      value: 'https://github.com/openshift/cluster-csi-snapshot-controller-operator'
+    - name: repository-name
+      value: 'cluster-csi-snapshot-controller-operator'
+    - name: branch
+      value: 'master'
+    - name: dockerfile
+      value: 'Dockerfile.ocp'

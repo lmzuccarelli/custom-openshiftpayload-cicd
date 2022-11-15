@@ -1,0 +1,16 @@
+
+Kind: TaskRun
+apiVersion: 0.0.1
+metadata:
+  name: taskrun-csi-driver-shared-resource-operator
+spec:
+  taskRef:  custom-openshiftbuild-task
+  parameters:
+    - name: repository-url
+      value: 'https://github.com/openshift/csi-driver-shared-resource-operator'
+    - name: repository-name
+      value: 'csi-driver-shared-resource-operator'
+    - name: branch
+      value: 'master'
+    - name: dockerfile
+      value: 'Dockerfile.ocp'

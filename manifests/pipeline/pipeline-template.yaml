@@ -1,0 +1,15 @@
+kind: PipelineTemplate
+apiVersion: 0.0.1
+metadata:
+  name: openshiftbuild-pipeline-template
+spec:
+  workingDirectory: 'working-dir'
+  parameters:
+    - name: base-registry
+      value: 'localhost:5000/openshift'
+    - name: tag-version
+      value: 'v4.12.0'
+  tasks:
+    - name: custom-openshift-build
+      taskRef: custom-openshift-build
+

@@ -1,0 +1,8 @@
+kind: TaskRunConfig
+apiVersion: 0.0.1
+metatdata:
+  name: taskrun-config
+spec:
+  taskRunList:
+    #- assisted-installer-agent
+    - assisted-installer
