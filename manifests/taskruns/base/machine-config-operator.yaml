@@ -1,0 +1,17 @@
+
+kind: TaskRun
+apiVersion: 0.0.1
+metadata:
+  name: machine-config-operator
+spec:
+  taskRef:
+    name: custom-openshift-build
+  params:
+    - name: repository-url
+      value: 'https://github.com/openshift/machine-config-operator'
+    - name: repository-name
+      value: 'machine-config-operator'
+    - name: branch
+      value: 'master'
+    - name: dockerfile
+      value: 'Dockerfile'

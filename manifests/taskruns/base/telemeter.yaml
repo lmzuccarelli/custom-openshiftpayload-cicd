@@ -1,0 +1,17 @@
+
+kind: TaskRun
+apiVersion: 0.0.1
+metadata:
+  name: telemeter
+spec:
+  taskRef:
+    name: custom-openshift-build
+  params:
+    - name: repository-url
+      value: 'https://github.com/openshift/telemeter'
+    - name: repository-name
+      value: 'telemeter'
+    - name: branch
+      value: 'master'
+    - name: dockerfile
+      value: 'Dockerfile'

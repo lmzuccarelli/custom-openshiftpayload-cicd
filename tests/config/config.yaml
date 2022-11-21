@@ -4,6 +4,4 @@ metatdata:
   name: taskrun-config
 spec:
   taskRunList:
-    - assisted-installer-agent
-    #- assisted-installer
-    #- agent-installer-node-agent
+    - test

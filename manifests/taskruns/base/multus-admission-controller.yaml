@@ -1,0 +1,17 @@
+
+kind: TaskRun
+apiVersion: 0.0.1
+metadata:
+  name: multus-admission-controller
+spec:
+  taskRef:
+    name: custom-openshift-build
+  params:
+    - name: repository-url
+      value: 'https://github.com/openshift/multus-admission-controller'
+    - name: repository-name
+      value: 'multus-admission-controller'
+    - name: branch
+      value: 'master'
+    - name: dockerfile
+      value: 'Dockerfile.openshift'

@@ -1,0 +1,17 @@
+
+kind: TaskRun
+apiVersion: 0.0.1
+metadata:
+  name: csi-driver-nfs
+spec:
+  taskRef:
+    name: custom-openshift-build
+  params:
+    - name: repository-url
+      value: 'https://github.com/openshift/csi-driver-nfs'
+    - name: repository-name
+      value: 'csi-driver-nfs'
+    - name: branch
+      value: 'master'
+    - name: dockerfile
+      value: 'images/Dockerfile'

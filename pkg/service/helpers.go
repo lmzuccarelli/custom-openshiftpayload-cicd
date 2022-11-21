@@ -2,7 +2,10 @@ package service
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
+	"path/filepath"
+	"reflect"
 	"strings"
 	"text/template"
 
@@ -10,14 +13,24 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+const (
+	build           string = "Build"
+	buildConfig     string = "BuildConfig"
+	manifests       string = "/manifests/"
+	dotYml          string = ".yaml"
+	errMsgYaml      string = "converting struct to yaml for %s"
+	errMsgUnmarshal string = "unmarshaling yaml to struct %v for %s"
+)
+
 var taskRunTemplate = `
-Kind: TaskRun
+kind: TaskRun
 apiVersion: 0.0.1
 metadata:
   name: {{ .Name }}
 spec:
-  taskRef:  {{ .TaskRef }}
-  parameters:
+  taskRef:
+    name: {{ .TaskRef }}
+  params:
     - name: repository-url
       value: '{{ .GitURL }}'
     - name: repository-name
@@ -53,9 +66,9 @@ func deepCopyTask(task schema.Task) schema.Task {
 	return t
 }
 
-func mergeParams(tr *schema.TaskRun, pt *schema.PipelineTemplate) {
-	for _, p := range pt.Spec.Parameters {
-		tr.Spec.Parameters = append(tr.Spec.Parameters, p)
+func mergeParams(tr *schema.TaskRun, pt *schema.Pipeline) {
+	for _, p := range pt.Spec.Params {
+		tr.Spec.Params = append(tr.Spec.Params, schema.Param{Name: p.Name, Value: p.Default})
 	}
 }
 
@@ -74,7 +87,7 @@ func updateParameters(task schema.Task, taskrun schema.TaskRun) {
 
 func replaceWithParamValue(task schema.TaskRun, value string) string {
 	newValue := value
-	for _, param := range task.Spec.Parameters {
+	for _, param := range task.Spec.Params {
 		newValue = strings.ReplaceAll(newValue, "${params."+param.Name+"}", param.Value)
 	}
 	return newValue
@@ -98,103 +111,123 @@ func findTaskRun(taskruns []schema.TaskRun, reference string) schema.TaskRun {
 	return schema.TaskRun{}
 }
 
-func readAllTaskFiles(dir string) ([]schema.Task, error) {
+func readAllTaskFiles(dir string, files []string) ([]schema.Task, error) {
 	var tasks []schema.Task
-	var task *schema.Task
-	files, err := ioutil.ReadDir(dir)
-	if err != nil {
-		return []schema.Task{}, err
-	}
 	for _, f := range files {
-		yfile, err := ioutil.ReadFile(dir + f.Name())
-		if err != nil {
+		hldTask, err := yamlToStruct(dir+"/"+f, schema.Task{})
+		t, ok := hldTask.(schema.Task)
+		if err != nil && ok {
 			return []schema.Task{}, err
 		}
-		err = yaml.Unmarshal(yfile, &task)
-		if err != nil {
-			return []schema.Task{}, err
-		}
-		tasks = append(tasks, *task)
+		tasks = append(tasks, t)
 	}
 	return tasks, nil
 }
 
-func readAllTaskRunFiles(config, dir string) ([]schema.TaskRun, error) {
+func readAllTaskRunFiles(dir string, files []string) ([]schema.TaskRun, error) {
 	var taskruns []schema.TaskRun
-	var taskrun *schema.TaskRun
-	var taskrunConfig *schema.TaskRunConfig
+	var tr schema.TaskRun
+	var ok bool
 
-	// read the config file - ignore errors
-	if len(config) > 0 {
-		cfg, err := ioutil.ReadFile(config)
-		if err != nil {
-			return []schema.TaskRun{}, err
-		}
-		err = yaml.Unmarshal(cfg, &taskrunConfig)
-		if err != nil {
-			return []schema.TaskRun{}, err
-		}
-	}
-
-	files, err := ioutil.ReadDir(dir)
-	if err != nil {
-		return []schema.TaskRun{}, err
-	}
 	for _, f := range files {
-		yfile, err := ioutil.ReadFile(dir + f.Name())
-		if err != nil {
+		hldTr, err := yamlToStruct(dir+"/"+f, schema.TaskRun{})
+		tr, ok = hldTr.(schema.TaskRun)
+		if err != nil && !ok {
 			return []schema.TaskRun{}, err
 		}
-		err = yaml.Unmarshal(yfile, &taskrun)
-		if err != nil {
-			return []schema.TaskRun{}, err
-		}
-		taskruns = append(taskruns, *taskrun)
-	}
-
-	// filter if config is set
-	if len(config) > 0 {
-		var tr []schema.TaskRun
-		for _, cfg := range taskrunConfig.Spec.TaskRunList {
-			tr = append(tr, findTaskRun(taskruns, cfg))
-		}
-		return tr, nil
+		taskruns = append(taskruns, tr)
 	}
 	return taskruns, nil
 }
 
-func readPipelineTemplateFile(file string) (*schema.PipelineTemplate, error) {
-	var pt *schema.PipelineTemplate
-	yfile, err := ioutil.ReadFile(file)
+// readAllBuildConfigs - reads all the BuildConfigs from a given directory
+func readAllBuildConfigs(dir string) ([]schema.BuildConfig, error) {
+	var bcs []schema.BuildConfig
+	files, err := ioutil.ReadDir(dir)
 	if err != nil {
-		return &schema.PipelineTemplate{}, err
+		return []schema.BuildConfig{}, err
 	}
-	err = yaml.Unmarshal(yfile, &pt)
-	if err != nil {
-		return &schema.PipelineTemplate{}, err
+	for _, f := range files {
+		if !f.IsDir() {
+			hldBC, err := yamlToStruct(dir+"/"+f.Name(), schema.BuildConfig{})
+			bc, ok := hldBC.(schema.BuildConfig)
+			if err != nil && ok {
+				return []schema.BuildConfig{}, err
+			}
+			// we are only interested in BuildCobcnfigs
+			if bc.Kind == buildConfig {
+				bcs = append(bcs, bc)
+			}
+		}
 	}
-	return pt, nil
+	return bcs, nil
 }
 
-func generateTaskRunFiles(file string) error {
-	f, err := ioutil.ReadFile(file)
-	if err != nil {
-		return err
-	}
-	lines := strings.Split(string(f), "\n")
-	for _, line := range lines {
-		hld := strings.Split(line, "/")
-		schema := &schema.TemplateSchema{Name: hld[len(hld)-1], GitURL: line, Dockerfile: "Dockerfile.ocp", TaskRef: "custom-openshiftbuild-task"}
+func generateTaskRunFiles(bcs []schema.BuildConfig) error {
+	for _, bc := range bcs {
+		schema := &schema.TemplateSchema{Name: filepath.Base(bc.Spec.Source.Git.URI), GitURL: bc.Spec.Source.Git.URI, Dockerfile: bc.Spec.Strategy.DockerStrategy.DockerfilePath, TaskRef: "custom-openshift-build"}
 		//parse some content and generate a template
 		tmpl := template.New("taskruns")
-		//parse some content and generate a template
 		tmp, _ := tmpl.Parse(taskRunTemplate)
 		var tpl bytes.Buffer
 		tmp.Execute(&tpl, schema)
-		err = ioutil.WriteFile("./manifests/taskruns/"+schema.Name+".yaml", tpl.Bytes(), 0755)
+		err := ioutil.WriteFile("./manifests/taskruns/"+schema.Name+".yaml", tpl.Bytes(), 0755)
 		if err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func yamlToStruct(file string, strctType interface{}) (interface{}, error) {
+	yfile, err := ioutil.ReadFile(file)
+	if err != nil {
+		return strctType, err
+	}
+	v := reflect.TypeOf(strctType).String()
+	switch v {
+	case "schema.BuildConfig":
+		var bc schema.BuildConfig
+		err = yaml.Unmarshal(yfile, &bc)
+		if err != nil {
+			return strctType, fmt.Errorf(errMsgUnmarshal, err, file)
+		}
+		return bc, nil
+	case "schema.TaskRun":
+		var tr schema.TaskRun
+		err = yaml.Unmarshal(yfile, &tr)
+		if err != nil {
+			return strctType, fmt.Errorf(errMsgUnmarshal, err, file)
+		}
+		return tr, nil
+	case "schema.Task":
+		var t schema.Task
+		err = yaml.Unmarshal(yfile, &t)
+		if err != nil {
+			return strctType, fmt.Errorf(errMsgUnmarshal, err, file)
+		}
+		return t, nil
+	case "schema.Pipeline":
+		var p schema.Pipeline
+		err = yaml.Unmarshal(yfile, &p)
+		if err != nil {
+			return strctType, fmt.Errorf(errMsgUnmarshal, err, file)
+		}
+		return p, nil
+	case "schema.Kustomization":
+		var k schema.Kustomization
+		err = yaml.Unmarshal(yfile, &k)
+		if err != nil {
+			return strctType, fmt.Errorf(errMsgUnmarshal, err, file)
+		}
+		return k, nil
+	case "schema.TaskRunConfig":
+		var trc schema.TaskRunConfig
+		err = yaml.Unmarshal(yfile, &trc)
+		if err != nil {
+			return strctType, fmt.Errorf(errMsgUnmarshal, err, file)
+		}
+		return trc, nil
+	}
+	return strctType, nil
 }

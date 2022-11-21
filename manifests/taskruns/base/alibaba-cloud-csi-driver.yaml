@@ -1,0 +1,17 @@
+
+kind: TaskRun
+apiVersion: 0.0.1
+metadata:
+  name: alibaba-cloud-csi-driver
+spec:
+  taskRef:
+    name: custom-openshift-build
+  params:
+    - name: repository-url
+      value: 'https://github.com/openshift/alibaba-cloud-csi-driver'
+    - name: repository-name
+      value: 'alibaba-cloud-csi-driver'
+    - name: branch
+      value: 'master'
+    - name: dockerfile
+      value: 'Dockerfile.openshift'

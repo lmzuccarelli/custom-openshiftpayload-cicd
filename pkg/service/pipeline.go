@@ -1,48 +1,96 @@
 package service
 
 import (
+	"fmt"
 	"os"
-	"path/filepath"
+	"reflect"
 	"strings"
 
 	"github.com/luigizuccarelli/custom-openshiftpayload-cicd/pkg/connectors"
+	"github.com/luigizuccarelli/custom-openshiftpayload-cicd/pkg/schema"
 )
 
-func ExecutePipeline(file, config string, c connectors.Clients) error {
+func ExecutePipeline(path string, c connectors.Clients) error {
 
-	pt, err := readPipelineTemplateFile(file)
-	if err != nil {
+	var p schema.Pipeline
+	var t []schema.Task
+	var tr []schema.TaskRun
+	var ok bool
+
+	// read the main kustomization yaml file
+	hldK, err := yamlToStruct(path+"/kustomization.yaml", schema.Kustomization{})
+	k, ok := hldK.(schema.Kustomization)
+	if err != nil && !ok {
 		return err
 	}
-	if len(pt.Spec.WorkingDirectory) == 0 {
-		c.Info("field 'workingDirectory is empty current directory 'working-dir' is set as default")
-		pt.Spec.WorkingDirectory = "./working-dir"
+	c.Trace("main kustomization file : %v", k)
+
+	// get all the relevant files to load
+	s := strings.Split(path, "/")
+	for _, f := range k.Bases {
+		dirs := strings.Split(f, "/")
+		subDir := strings.Join(dirs[len(s)-1:], "/")
+		subK, err := yamlToStruct(subDir+"/kustomization.yaml", schema.Kustomization{})
+		k, ok := subK.(schema.Kustomization)
+		if err != nil && !ok {
+			return err
+		}
+		c.Trace("sub level kustomization file %s : %v", subDir, subK)
+
+		switch {
+		case strings.Contains(subDir, "pipelines"):
+			// only the first pipeline file will be used
+			// other pipleine files will be ignored
+			hldPt, err := yamlToStruct(subDir+"/"+k.Bases[0], schema.Pipeline{})
+			p, ok = hldPt.(schema.Pipeline)
+			if err != nil && !ok {
+				return err
+			}
+			c.Debug("pipelines : %v", p)
+			if len(p.Spec.Workspaces) == 0 {
+				c.Info("field 'Workspaces is empty current directory 'working-dir' is set as default")
+				p.Spec.Workspaces[0].Name = "./working-dir"
+			}
+			c.Info("deleting working directory %s", p.Spec.Workspaces[0].Name)
+			err = os.RemoveAll(p.Spec.Workspaces[0].Name)
+			if err != nil {
+				return err
+			}
+			c.Info("creating working directory %s", p.Spec.Workspaces[0].Name)
+			err = os.MkdirAll(p.Spec.Workspaces[0].Name, os.ModePerm)
+			if err != nil {
+				return err
+			}
+		case strings.Contains(subDir, "tasks"):
+			t, err = readAllTaskFiles(subDir, k.Bases)
+			if err != nil {
+				return err
+			}
+			c.Debug("tasks : %v", t)
+		case strings.Contains(subDir, "taskruns"):
+			tr, err = readAllTaskRunFiles(subDir, k.Bases)
+			if err != nil {
+				return err
+			}
+			c.Debug("taskruns : %v", tr)
+			if len(tr) == 0 {
+				return fmt.Errorf("taskrun list is empty (verify taskruns kustomization file)")
+			}
+		}
 	}
-	c.Info("deleting working directory %s", pt.Spec.WorkingDirectory)
-	os.RemoveAll(pt.Spec.WorkingDirectory)
-	c.Info("creating working directory %s", pt.Spec.WorkingDirectory)
-	os.MkdirAll(pt.Spec.WorkingDirectory, os.ModePerm)
 
-	dir := "./" + strings.Split(filepath.Dir(file), "/")[0]
-
-	tasks, err := readAllTaskFiles(dir + "/tasks/")
-	if err != nil {
-		return err
-	}
-
-	taskruns, err := readAllTaskRunFiles(config, dir+"/taskruns/")
-	if err != nil {
-		return err
-	}
-
-	for _, taskrun := range taskruns {
-		mergeParams(&taskrun, pt)
-		task := findRelatedTask(tasks, taskrun.Spec.TaskRef)
+	// we now execute the pipeline from the taskruns
+	for _, taskrun := range tr {
+		mergeParams(&taskrun, &p)
+		task := findRelatedTask(t, taskrun.Spec.TaskRef.Name)
+		if reflect.DeepEqual(task, schema.Task{}) {
+			return fmt.Errorf("no related task '%s' found to execute", taskrun.Spec.TaskRef.Name)
+		}
 		newTask := deepCopyTask(task)
 		updateParameters(newTask, taskrun)
 		for _, step := range newTask.Spec.Steps {
 			c.Info("executing %s for %s", step.Name, taskrun.Metadata.Name)
-			err := c.ExecOS(pt.Spec.WorkingDirectory+"/"+step.Workspace, step.Command[0], step.Args, true)
+			err := c.ExecOS(p.Spec.Workspaces[0].Name+"/"+step.Workspace, step.Command[0], step.Args, true)
 			if err != nil {
 				return err
 			}
@@ -52,5 +100,9 @@ func ExecutePipeline(file, config string, c connectors.Clients) error {
 }
 
 func GenerateTaskRunFiles(file string) error {
-	return generateTaskRunFiles(file)
+	bcs, err := readAllBuildConfigs(file)
+	if err != nil {
+		return err
+	}
+	return generateTaskRunFiles(bcs)
 }

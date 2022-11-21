@@ -1,0 +1,17 @@
+
+kind: TaskRun
+apiVersion: 0.0.1
+metadata:
+  name: network-tools
+spec:
+  taskRef:
+    name: custom-openshift-build
+  params:
+    - name: repository-url
+      value: 'https://github.com/openshift/network-tools'
+    - name: repository-name
+      value: 'network-tools'
+    - name: branch
+      value: 'master'
+    - name: dockerfile
+      value: 'Dockerfile'

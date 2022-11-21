@@ -1,0 +1,17 @@
+
+kind: TaskRun
+apiVersion: 0.0.1
+metadata:
+  name: openshift-apiserver
+spec:
+  taskRef:
+    name: custom-openshift-build
+  params:
+    - name: repository-url
+      value: 'https://github.com/openshift/openshift-apiserver'
+    - name: repository-name
+      value: 'openshift-apiserver'
+    - name: branch
+      value: 'master'
+    - name: dockerfile
+      value: 'images/Dockerfile.rhel'

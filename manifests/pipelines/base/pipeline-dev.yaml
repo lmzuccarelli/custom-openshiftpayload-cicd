@@ -1,0 +1,189 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: pipeline-dev
+spec:
+  params:
+  - name: message
+    description: The message to print
+    default: This is the default message
+    type: string
+  - name: actor-name 
+    description: The actor
+    type: string
+  - name: repo-url 
+    description: The repo url
+    type: string
+  - name: actor-email 
+    description: The actors email
+    type: string
+  - name: repo-name 
+    description: The repo name
+    type: string
+  - name: repo-hash 
+    description: The repo commit hash
+    type: string
+  - name: SONAR_HOST_URL
+    type: string
+    description: The sonarqube host url
+    default: https://sonar-sonarqube-devops-cicd.apps.c6-14w.j2k0.p1.openshiftapps.com
+  - name: infra-repo
+    type: string
+    description: The infra repo
+  
+  workspaces:
+    - name: shared-workspace
+
+  resources:
+    - name: git-source
+      type: git
+    - name: build-image
+      type: image
+    - name: git-infra-repo
+      type: git
+
+   
+  tasks:
+  - name: fetch-repository
+    params:
+      - name: url
+        value: $(params.repo-url)
+      - name: deleteExisting
+        value: 'true'
+      - name: revision
+        value: master
+      - name: subdirectory
+        value: $(params.repo-name)
+    taskRef:
+      kind: ClusterTask
+      name: git-clone
+    workspaces:
+      - name: output
+        workspace: shared-workspace
+       
+  - name: golang-clean-dev
+    runAfter: [fetch-repository]
+    taskRef:
+      name: golang-clean-dev
+    params:
+    - name: message
+      value: $(params.message)
+    - name: repo-name
+      value: $(params.repo-name)
+    - name: repo-url
+      value: $(params.repo-url)
+    - name: repo-hash
+      value: $(params.repo-hash)
+    - name: actor-name
+      value: $(params.actor-name)
+    - name: actor-email
+      value: $(params.actor-email)
+    workspaces:
+      - name: output
+        workspace: shared-workspace
+        
+  - name: golang-test-dev
+    runAfter: [golang-clean-dev]
+    taskRef:
+      name: golang-test-dev
+    params:
+    - name: message
+      value: $(params.message)
+    - name: repo-name
+      value: $(params.repo-name)
+    - name: repo-url
+      value: $(params.repo-url)
+    - name: repo-hash
+      value: $(params.repo-hash)
+    - name: actor-name
+      value: $(params.actor-name)
+    - name: actor-email
+      value: $(params.actor-email)
+    workspaces:
+      - name: output
+        workspace: shared-workspace
+        
+  - name: golang-sonarqube-dev
+    runAfter: [golang-test-dev]
+    taskRef:
+      name: golang-sonarqube-dev
+    params:
+    - name: message
+      value: $(params.message)
+    - name: repo-name
+      value: $(params.repo-name)
+    - name: repo-url
+      value: $(params.repo-url)
+    - name: repo-hash
+      value: $(params.repo-hash)
+    - name: actor-name
+      value: $(params.actor-name)
+    - name: actor-email
+      value: $(params.actor-email)
+    - name: SONAR_HOST_URL
+      value: $(params.SONAR_HOST_URL)
+    - name: SONAR_PROJECT_KEY
+      value: $(params.repo-name)
+    - name: SONAR_SECRET
+      value: sonarqube-access-token
+      
+    workspaces:
+      - name: output
+        workspace: shared-workspace
+        
+  - name: golang-build-dev
+    runAfter: [golang-sonarqube-dev]
+    taskRef:
+      name: golang-build-dev
+    params:
+    - name: message
+      value: $(params.message)
+    - name: repo-name
+      value: $(params.repo-name)
+    - name: repo-url
+      value: $(params.repo-url)
+    - name: repo-hash
+      value: $(params.repo-hash)
+    - name: actor-name
+      value: $(params.actor-name)
+    - name: actor-email
+      value: $(params.actor-email)
+    workspaces:
+      - name: output
+        workspace: shared-workspace
+        
+  - name: patch-image
+    taskRef:
+      name: clone-patch-image
+      kind: ClusterTask
+    runAfter: [golang-build-dev]
+    workspaces:
+      - name: output
+        workspace: shared-workspace
+     
+    params:
+    - name: message
+      value: $(params.message)
+    - name: repo-name
+      value: $(params.repo-name)
+    - name: repo-url
+      value: $(params.repo-url)
+    - name: repo-hash
+      value: $(params.repo-hash)
+    - name: actor-name
+      value: $(params.actor-name)
+    - name: actor-email
+      value: $(params.actor-email)
+    - name: URL
+      value: $(params.infra-repo)
+    - name: IMAGE_TAG
+      value: $(params.repo-hash)
+    - name: REVISION
+      value: HEAD
+    - name: GIT_AUTHOR_NAME
+      value: $(params.actor-name)
+    - name: GIT_AUTHOR_EMAIL
+      value: $(params.actor-email)
+    - name: MANIFEST_FILE
+      value: environments/overlays/dev/patches/patch-$(params.repo-name)-image.yaml
+

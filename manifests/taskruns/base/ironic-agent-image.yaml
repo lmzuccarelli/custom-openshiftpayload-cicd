@@ -1,0 +1,17 @@
+
+kind: TaskRun
+apiVersion: 0.0.1
+metadata:
+  name: ironic-agent-image
+spec:
+  taskRef:
+    name: custom-openshift-build
+  params:
+    - name: repository-url
+      value: 'https://github.com/openshift/ironic-agent-image'
+    - name: repository-name
+      value: 'ironic-agent-image'
+    - name: branch
+      value: 'master'
+    - name: dockerfile
+      value: 'Dockerfile.okd'
