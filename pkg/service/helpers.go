@@ -163,7 +163,7 @@ func readAllBuildConfigs(dir string) ([]schema.BuildConfig, error) {
 	return bcs, nil
 }
 
-func generateTaskRunFiles(bcs []schema.BuildConfig) error {
+func generateTaskRunFiles(dir string, bcs []schema.BuildConfig) error {
 	for _, bc := range bcs {
 		schema := &schema.TemplateSchema{Name: filepath.Base(bc.Spec.Source.Git.URI), GitURL: bc.Spec.Source.Git.URI, Dockerfile: bc.Spec.Strategy.DockerStrategy.DockerfilePath, TaskRef: "custom-openshift-build"}
 		//parse some content and generate a template
@@ -171,7 +171,7 @@ func generateTaskRunFiles(bcs []schema.BuildConfig) error {
 		tmp, _ := tmpl.Parse(taskRunTemplate)
 		var tpl bytes.Buffer
 		tmp.Execute(&tpl, schema)
-		err := ioutil.WriteFile("./manifests/taskruns/"+schema.Name+".yaml", tpl.Bytes(), 0755)
+		err := ioutil.WriteFile(dir+"/"+schema.Name+".yaml", tpl.Bytes(), 0755)
 		if err != nil {
 			return err
 		}
@@ -221,13 +221,6 @@ func yamlToStruct(file string, strctType interface{}) (interface{}, error) {
 			return strctType, fmt.Errorf(errMsgUnmarshal, err, file)
 		}
 		return k, nil
-	case "schema.TaskRunConfig":
-		var trc schema.TaskRunConfig
-		err = yaml.Unmarshal(yfile, &trc)
-		if err != nil {
-			return strctType, fmt.Errorf(errMsgUnmarshal, err, file)
-		}
-		return trc, nil
 	}
 	return strctType, nil
 }

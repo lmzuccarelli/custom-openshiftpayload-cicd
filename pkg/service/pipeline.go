@@ -26,22 +26,19 @@ func ExecutePipeline(path string, c connectors.Clients) error {
 	c.Trace("main kustomization file : %v", k)
 
 	// get all the relevant files to load
-	s := strings.Split(path, "/")
 	for _, f := range k.Bases {
-		dirs := strings.Split(f, "/")
-		subDir := strings.Join(dirs[len(s)-1:], "/")
-		subK, err := yamlToStruct(subDir+"/kustomization.yaml", schema.Kustomization{})
+		subK, err := yamlToStruct(f+"/kustomization.yaml", schema.Kustomization{})
 		k, ok := subK.(schema.Kustomization)
 		if err != nil && !ok {
 			return err
 		}
-		c.Trace("sub level kustomization file %s : %v", subDir, subK)
+		c.Trace("sub level kustomization file %s : %v", f, subK)
 
 		switch {
-		case strings.Contains(subDir, "pipelines"):
+		case strings.Contains(f, "pipelines"):
 			// only the first pipeline file will be used
 			// other pipleine files will be ignored
-			hldPt, err := yamlToStruct(subDir+"/"+k.Bases[0], schema.Pipeline{})
+			hldPt, err := yamlToStruct(f+"/"+k.Bases[0], schema.Pipeline{})
 			p, ok = hldPt.(schema.Pipeline)
 			if err != nil && !ok {
 				return err
@@ -61,14 +58,14 @@ func ExecutePipeline(path string, c connectors.Clients) error {
 			if err != nil {
 				return err
 			}
-		case strings.Contains(subDir, "tasks"):
-			t, err = readAllTaskFiles(subDir, k.Bases)
+		case strings.Contains(f, "tasks"):
+			t, err = readAllTaskFiles(f, k.Bases)
 			if err != nil {
 				return err
 			}
 			c.Debug("tasks : %v", t)
-		case strings.Contains(subDir, "taskruns"):
-			tr, err = readAllTaskRunFiles(subDir, k.Bases)
+		case strings.Contains(f, "taskruns"):
+			tr, err = readAllTaskRunFiles(f, k.Bases)
 			if err != nil {
 				return err
 			}
@@ -99,10 +96,10 @@ func ExecutePipeline(path string, c connectors.Clients) error {
 	return nil
 }
 
-func GenerateTaskRunFiles(file string) error {
-	bcs, err := readAllBuildConfigs(file)
+func GenerateTaskRunFiles(path, dstPath string) error {
+	bcs, err := readAllBuildConfigs(path)
 	if err != nil {
 		return err
 	}
-	return generateTaskRunFiles(bcs)
+	return generateTaskRunFiles(dstPath, bcs)
 }

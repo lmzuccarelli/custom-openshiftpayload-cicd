@@ -8,29 +8,22 @@ import (
 )
 
 func TestExecutePipeline(t *testing.T) {
-
-	logger := multi.NewLogger(multi.COLOR, "debug")
+	logger := multi.NewLogger(multi.COLOR, "trace")
 	client := connectors.NewClientConnections(logger)
 
-	t.Run("Testing Convert : should pass", func(t *testing.T) {
-		err := ExecutePipeline("../../tests/pipeline/pipeline.yaml", "../../tests/config/config.yaml", client)
+	t.Run("Testing ExecutePipeline : should pass", func(t *testing.T) {
+		err := ExecutePipeline("../../tests/config", client)
 		if err != nil {
 			t.Fatalf("Should not fail : found error %v", err)
 		}
 	})
-	/*
-		t.Run("Testing Convert : (bad config) should fail", func(t *testing.T) {
-			err := Convert("../../tests/conf.yaml")
-			if err == nil { e
-				t.Fatalf("Should fail : found error %v", err)
-			}
-		})
+}
 
-		t.Run("Testing Convert : (bad bc) should fail", func(t *testing.T) {
-			err := Convert("../../tests/config-bad-bc.yaml")
-			if err == nil {
-				t.Fatalf("Should fail : found error %v", err)
-			}
-		})
-	*/
+func TestGenerateTaskRunFiles(t *testing.T) {
+	t.Run("Testing GenerateTaskRunFiles : should pass", func(t *testing.T) {
+		err := GenerateTaskRunFiles("../../tests/buildconfigs", "../../tests/taskruns")
+		if err != nil {
+			t.Fatalf("Should not fail : found error %v", err)
+		}
+	})
 }
