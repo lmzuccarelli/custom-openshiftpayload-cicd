@@ -46,7 +46,7 @@ func ExecutePipeline(path string, c connectors.Clients) error {
 			c.Debug("pipelines : %v", p)
 			if len(p.Spec.Workspaces) == 0 {
 				c.Info("field 'Workspaces is empty current directory 'working-dir' is set as default")
-				p.Spec.Workspaces[0].Name = "./working-dir"
+				p.Spec.Workspaces = append(p.Spec.Workspaces, schema.Workspace{Name: "./working-dir"})
 			}
 			c.Info("deleting working directory %s", p.Spec.Workspaces[0].Name)
 			err = os.RemoveAll(p.Spec.Workspaces[0].Name)

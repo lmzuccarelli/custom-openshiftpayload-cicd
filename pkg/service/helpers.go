@@ -102,15 +102,6 @@ func findRelatedTask(tasks []schema.Task, reference string) schema.Task {
 	return schema.Task{}
 }
 
-func findTaskRun(taskruns []schema.TaskRun, reference string) schema.TaskRun {
-	for _, taskrun := range taskruns {
-		if taskrun.Metadata.Name == reference {
-			return taskrun
-		}
-	}
-	return schema.TaskRun{}
-}
-
 func readAllTaskFiles(dir string, files []string) ([]schema.Task, error) {
 	var tasks []schema.Task
 	for _, f := range files {

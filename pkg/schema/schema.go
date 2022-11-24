@@ -49,6 +49,10 @@ type TaskRun struct {
 	} `yaml:"spec"`
 }
 
+type Workspace struct {
+	Name string `yaml:"name"`
+}
+
 type Pipeline struct {
 	APIVersion string `yaml:"apiVersion"`
 	Kind       string `yaml:"kind"`
@@ -62,10 +66,8 @@ type Pipeline struct {
 			Default     string `yaml:"default,omitempty"`
 			Type        string `yaml:"type"`
 		} `yaml:"params"`
-		Workspaces []struct {
-			Name string `yaml:"name"`
-		} `yaml:"workspaces"`
-		Resources []struct {
+		Workspaces []Workspace `yaml:"workspaces"`
+		Resources  []struct {
 			Name string `yaml:"name"`
 			Type string `yaml:"type"`
 		} `yaml:"resources"`

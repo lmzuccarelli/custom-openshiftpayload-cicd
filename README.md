@@ -37,25 +37,15 @@ Execute the following command
 
 ```bash
 # this will use the repositories text file to autogenerate the taskruns fro the project
-./build/cicd -g generate/repositories.txt
+./build/cicd -g <folder-to-buildconfigs> -d <destination-folder-for taskruns> 
 
 ```
 
 Execute the following to start a pipeline 
 
 ```bash
-# NB a directory will be created from the field spec.workingDirectory in the PipelineTemplate (file reference in manifests/pipeline)
-# The command below will execute all the taskruns in the folder manifests/taskruns (generated from the previous step)
-./build/cicd -p manifests/pipeline/pipeline-template.yaml
+# NB a directory will be created from the field spec.workspaces[0].name in the Pipeline (file reference in manifests/pipeline)
+# The command below will execute all the taskruns in the folder that points to the main kustomization folder
+./build/cicd -k environments/overlays/cicd
 ```
 
-Execute the following to start a pipeline with a filtered list of taskruns
-
-```bash
-# update the file config/taskrun-config.yaml (add the specific name in the spec.TaskRunList field )
-# reference the name in the files /manifests/taskrun/ - use the field Metadata.Name
-
-# this will only build the operators found in the config file
-./build/cicd -p manifests/pipeline/pipeline-template.yaml -c config/taskrun-config.yaml
-
-```

@@ -55,9 +55,9 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">github.com/luigizuccarelli/custom-openshiftpayload-cicd/pkg/service/helpers.go (83.8%)</option>
+				<option value="file0">github.com/luigizuccarelli/custom-openshiftpayload-cicd/pkg/service/helpers.go (86.9%)</option>
 				
-				<option value="file1">github.com/luigizuccarelli/custom-openshiftpayload-cicd/pkg/service/pipeline.go (79.0%)</option>
+				<option value="file1">github.com/luigizuccarelli/custom-openshiftpayload-cicd/pkg/service/pipeline.go (81.4%)</option>
 				
 				</select>
 			</div>
@@ -173,15 +173,6 @@ func findRelatedTask(tasks []schema.Task, reference string) schema.Task <span cl
                 }</span>
         }
         <span class="cov0" title="0">return schema.Task{}</span>
-}
-
-func findTaskRun(taskruns []schema.TaskRun, reference string) schema.TaskRun <span class="cov0" title="0">{
-        for _, taskrun := range taskruns </span><span class="cov0" title="0">{
-                if taskrun.Metadata.Name == reference </span><span class="cov0" title="0">{
-                        return taskrun
-                }</span>
-        }
-        <span class="cov0" title="0">return schema.TaskRun{}</span>
 }
 
 func readAllTaskFiles(dir string, files []string) ([]schema.Task, error) <span class="cov8" title="1">{
@@ -327,17 +318,13 @@ func ExecutePipeline(path string, c connectors.Clients) error <span class="cov8"
         <span class="cov8" title="1">c.Trace("main kustomization file : %v", k)
 
         // get all the relevant files to load
-        s := strings.Split(path, "/")
         for _, f := range k.Bases </span><span class="cov8" title="1">{
-                dirs := strings.Split(f, "/")
-                subDir := strings.Join(dirs[len(s)-1:], "/")
-                //subK, err := yamlToStruct(subDir+"/kustomization.yaml", schema.Kustomization{})
                 subK, err := yamlToStruct(f+"/kustomization.yaml", schema.Kustomization{})
                 k, ok := subK.(schema.Kustomization)
                 if err != nil &amp;&amp; !ok </span><span class="cov0" title="0">{
                         return err
                 }</span>
-                <span class="cov8" title="1">c.Trace("sub level kustomization file %s : %v", subDir, subK)
+                <span class="cov8" title="1">c.Trace("sub level kustomization file %s : %v", f, subK)
 
                 switch </span>{
                 case strings.Contains(f, "pipelines"):<span class="cov8" title="1">
@@ -349,9 +336,9 @@ func ExecutePipeline(path string, c connectors.Clients) error <span class="cov8"
                                 return err
                         }</span>
                         <span class="cov8" title="1">c.Debug("pipelines : %v", p)
-                        if len(p.Spec.Workspaces) == 0 </span><span class="cov0" title="0">{
+                        if len(p.Spec.Workspaces) == 0 </span><span class="cov8" title="1">{
                                 c.Info("field 'Workspaces is empty current directory 'working-dir' is set as default")
-                                p.Spec.Workspaces[0].Name = "./working-dir"
+                                p.Spec.Workspaces = append(p.Spec.Workspaces, schema.Workspace{Name: "./working-dir"})
                         }</span>
                         <span class="cov8" title="1">c.Info("deleting working directory %s", p.Spec.Workspaces[0].Name)
                         err = os.RemoveAll(p.Spec.Workspaces[0].Name)
