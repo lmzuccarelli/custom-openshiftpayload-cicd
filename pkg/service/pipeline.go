@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/luigizuccarelli/custom-openshiftpayload-cicd/pkg/connectors"
-	"github.com/luigizuccarelli/custom-openshiftpayload-cicd/pkg/schema"
+	"github.com/lmzuccarelli/custom-tekton-emulator-cicd/pkg/connectors"
+	"github.com/lmzuccarelli/custom-tekton-emulator-cicd/pkg/schema"
 )
 
 func ExecutePipeline(path string, c connectors.Clients) error {
@@ -17,8 +17,9 @@ func ExecutePipeline(path string, c connectors.Clients) error {
 	var tr []schema.TaskRun
 	var ok bool
 
+	os.Chdir(path)
 	// read the main kustomization yaml file
-	hldK, err := yamlToStruct(path+"/kustomization.yaml", schema.Kustomization{})
+	hldK, err := yamlToStruct("./kustomization.yaml", schema.Kustomization{})
 	k, ok := hldK.(schema.Kustomization)
 	if err != nil && !ok {
 		return err
@@ -27,7 +28,8 @@ func ExecutePipeline(path string, c connectors.Clients) error {
 
 	// get all the relevant files to load
 	for _, f := range k.Bases {
-		subK, err := yamlToStruct(f+"/kustomization.yaml", schema.Kustomization{})
+		os.Chdir(f)
+		subK, err := yamlToStruct("./kustomization.yaml", schema.Kustomization{})
 		k, ok := subK.(schema.Kustomization)
 		if err != nil && !ok {
 			return err

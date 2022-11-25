@@ -55,9 +55,9 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">github.com/luigizuccarelli/custom-openshiftpayload-cicd/pkg/service/helpers.go (86.9%)</option>
+				<option value="file0">github.com/luigizuccarelli/custom-openshiftpayload-cicd/pkg/service/helpers.go (87.9%)</option>
 				
-				<option value="file1">github.com/luigizuccarelli/custom-openshiftpayload-cicd/pkg/service/pipeline.go (81.4%)</option>
+				<option value="file1">github.com/luigizuccarelli/custom-openshiftpayload-cicd/pkg/service/pipeline.go (82.0%)</option>
 				
 				</select>
 			</div>
@@ -245,7 +245,7 @@ func generateTaskRunFiles(dir string, bcs []schema.BuildConfig) error <span clas
 
 func yamlToStruct(file string, strctType interface{}) (interface{}, error) <span class="cov8" title="1">{
         yfile, err := ioutil.ReadFile(file)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return strctType, err
         }</span>
         <span class="cov8" title="1">v := reflect.TypeOf(strctType).String()
@@ -309,8 +309,9 @@ func ExecutePipeline(path string, c connectors.Clients) error <span class="cov8"
         var tr []schema.TaskRun
         var ok bool
 
+        os.Chdir(path)
         // read the main kustomization yaml file
-        hldK, err := yamlToStruct(path+"/kustomization.yaml", schema.Kustomization{})
+        hldK, err := yamlToStruct("./kustomization.yaml", schema.Kustomization{})
         k, ok := hldK.(schema.Kustomization)
         if err != nil &amp;&amp; !ok </span><span class="cov0" title="0">{
                 return err
@@ -319,7 +320,8 @@ func ExecutePipeline(path string, c connectors.Clients) error <span class="cov8"
 
         // get all the relevant files to load
         for _, f := range k.Bases </span><span class="cov8" title="1">{
-                subK, err := yamlToStruct(f+"/kustomization.yaml", schema.Kustomization{})
+                os.Chdir(f)
+                subK, err := yamlToStruct("./kustomization.yaml", schema.Kustomization{})
                 k, ok := subK.(schema.Kustomization)
                 if err != nil &amp;&amp; !ok </span><span class="cov0" title="0">{
                         return err

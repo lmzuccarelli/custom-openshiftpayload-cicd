@@ -9,7 +9,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/luigizuccarelli/custom-openshiftpayload-cicd/pkg/schema"
+	"github.com/lmzuccarelli/custom-tekton-emulator-cicd/pkg/schema"
 	"gopkg.in/yaml.v2"
 )
 

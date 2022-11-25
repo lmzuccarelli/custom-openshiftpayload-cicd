@@ -17,7 +17,7 @@ clean:
 	go clean ./...
 
 container:
-	podman build -t  quay.io/luzuccar/lab-openshift-cicd:v0.0.1 .
+	podman build -t  quay.io/luzuccar/lab-tekton-emulator-cicd:v0.0.1 .
 
 push:
-	podman push quay.io/luigizuccarelli/lab-openshift-cicd:v0.0.1
+	podman push quay.io/luigizuccarelli/lab-tekton-emulator-cicd:v0.0.1

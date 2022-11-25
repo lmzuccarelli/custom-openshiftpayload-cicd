@@ -1,15 +1,15 @@
-# Custom Openshift Payload CICD Pipeline
+# Custom Tekton Emulator CICD Pipeline
 
 ## Intro
 
 This is a simple POC project that executes on a local machine (desktop) that has a dependency on podman, a local docker registry and golang (ver 1.19.3).
-The intention is to build all the necessary core operators for openshift/okd without the need of kind, tekton etc, it makes use of simple yaml files and golang structures 
-to build and push these operators for later use.
+The intention is to build all the necessary core operators for openshift/okd without the need of kind, tekton etc, it makes use of simple yaml files and golang structures to build and push these operators for later use.
 
-The build time are reduced largely due to the local golang build cache and podman build cache. This was the main driver for opting to build this POC, as Tekton needs some extra thought implementing 
-caching in the PV allocation
+The build time are reduced largely due to the local golang build cache and podman build cache. This was the main driver for opting to build this POC, as Tekton needs some extra thought implementing caching in the PV allocation
 
 This was succesfully test with golang 1.19.3, podman 4.2.1 and docker registry v2.7.0-2013-gcec2cad8.m
+
+This project can also be used to emulate any Tekton pipeline that has tasks, taskruns and pipeline types (only these 3 types have been implemented for this POC)
 
 **NB** This is a WIP 
 
@@ -20,9 +20,9 @@ This custom cicd uses concepts (similar to Tekton) i.e pipeline, tasks and taskr
 ### Clone the repository and build
 
 ```bash
-git clone git@github.com:luigizuccarelli/custom-openshiftpayload-cicd
+git clone git@github.com:luigizuccarelli/custom-tekton-emulator-cicd
 
-cd custome-openshiftpayload-cicd
+cd custome-tekton-emulator-cicd
 make clean
 make build
 

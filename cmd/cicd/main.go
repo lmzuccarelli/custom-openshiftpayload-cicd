@@ -6,8 +6,8 @@ import (
 
 	"github.com/microlib/logger/pkg/multi"
 
-	"github.com/luigizuccarelli/custom-openshiftpayload-cicd/pkg/connectors"
-	"github.com/luigizuccarelli/custom-openshiftpayload-cicd/pkg/service"
+	"github.com/lmzuccarelli/custom-tekton-emulator-cicd/pkg/connectors"
+	"github.com/lmzuccarelli/custom-tekton-emulator-cicd/pkg/service"
 )
 
 var (
@@ -49,6 +49,10 @@ func main() {
 		os.Exit(0)
 	}
 
+	if len(kustomizePath) == 0 {
+		flag.Usage()
+		os.Exit(1)
+	}
 	err := service.ExecutePipeline(kustomizePath, client)
 	if err != nil {
 		client.Error("pipeline execution %v", err)

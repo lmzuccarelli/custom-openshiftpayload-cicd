@@ -1,16 +1,19 @@
 package service
 
 import (
+	"os"
 	"testing"
 
-	"github.com/luigizuccarelli/custom-openshiftpayload-cicd/pkg/connectors"
+	"github.com/lmzuccarelli/custom-tekton-emulator-cicd/pkg/connectors"
 	"github.com/microlib/logger/pkg/multi"
 )
+
+var workingDir string
 
 func TestExecutePipeline(t *testing.T) {
 	logger := multi.NewLogger(multi.COLOR, "trace")
 	client := connectors.NewClientConnections(logger)
-
+	workingDir, _ = os.Getwd()
 	t.Run("Testing ExecutePipeline : should pass", func(t *testing.T) {
 		err := ExecutePipeline("../../tests/config", client)
 		if err != nil {
@@ -28,6 +31,7 @@ func TestExecutePipeline(t *testing.T) {
 }
 
 func TestGenerateTaskRunFiles(t *testing.T) {
+	os.Chdir(workingDir)
 	t.Run("Testing GenerateTaskRunFiles : should pass", func(t *testing.T) {
 		err := GenerateTaskRunFiles("../../tests/buildconfigs", "../../tests/taskruns")
 		if err != nil {

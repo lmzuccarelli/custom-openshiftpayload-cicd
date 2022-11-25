@@ -1,4 +1,4 @@
-module github.com/luigizuccarelli/custom-openshiftpayload-cicd
+module github.com/lmzuccarelli/custom-tekton-emulator-cicd
 
 go 1.19
 
