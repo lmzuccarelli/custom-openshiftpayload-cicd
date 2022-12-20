@@ -40,7 +40,7 @@ func main() {
 	client := connectors.NewClientConnections(logger)
 
 	if len(generateTaskRunFiles) > 0 && len(buildConfigDir) > 0 {
-		err := service.GenerateTaskRunFiles(generateTaskRunFiles, buildConfigDir)
+		err := service.GenerateTaskRunFiles(buildConfigDir, generateTaskRunFiles)
 		if err != nil {
 			client.Error("generating taskrun files %v", err)
 			os.Exit(1)

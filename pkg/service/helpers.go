@@ -147,6 +147,8 @@ func readAllBuildConfigs(dir string) ([]schema.BuildConfig, error) {
 			}
 			// we are only interested in BuildCobcnfigs
 			if bc.Kind == buildConfig {
+				fmap := map[string]string{"fileRef": f.Name()}
+				bc.Metadata.Annotations = fmap
 				bcs = append(bcs, bc)
 			}
 		}
@@ -162,7 +164,7 @@ func generateTaskRunFiles(dir string, bcs []schema.BuildConfig) error {
 		tmp, _ := tmpl.Parse(taskRunTemplate)
 		var tpl bytes.Buffer
 		tmp.Execute(&tpl, schema)
-		err := ioutil.WriteFile(dir+"/"+schema.Name+".yaml", tpl.Bytes(), 0755)
+		err := ioutil.WriteFile(dir+"/"+bc.Metadata.Annotations["fileRef"], tpl.Bytes(), 0755)
 		if err != nil {
 			return err
 		}

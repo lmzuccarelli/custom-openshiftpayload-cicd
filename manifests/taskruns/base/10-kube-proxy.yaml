@@ -1,0 +1,17 @@
+
+kind: TaskRun
+apiVersion: 0.0.1
+metadata:
+  name: sdn
+spec:
+  taskRef:
+    name: custom-openshift-build
+  params:
+    - name: repository-url
+      value: 'https://github.com/openshift/sdn'
+    - name: repository-name
+      value: 'sdn'
+    - name: branch
+      value: 'master'
+    - name: dockerfile
+      value: 'images/kube-proxy/Dockerfile.rhel'
