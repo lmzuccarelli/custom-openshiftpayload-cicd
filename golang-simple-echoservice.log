@@ -1,23 +1,23 @@
 /home/lzuccarelli/Projects/custom-tekton-emulator-cicd/working-dir/golang-simple-echoservice
 total 108
-drwxr-xr-x. 8 lzuccarelli lzuccarelli  4096 Dec 22 13:28 .
-drwxr-xr-x. 3 lzuccarelli lzuccarelli  4096 Dec 22 13:28 ..
-drwxr-xr-x. 2 lzuccarelli lzuccarelli  4096 Dec 22 13:28 .cicd
-drwxr-xr-x. 3 lzuccarelli lzuccarelli  4096 Dec 22 13:28 cmd
--rw-r--r--. 1 lzuccarelli lzuccarelli   458 Dec 22 13:28 Dockerfile
-drwxr-xr-x. 8 lzuccarelli lzuccarelli  4096 Dec 22 13:28 .git
--rw-r--r--. 1 lzuccarelli lzuccarelli    20 Dec 22 13:28 .gitignore
--rw-r--r--. 1 lzuccarelli lzuccarelli   782 Dec 22 13:28 golangci-example.yaml
--rw-r--r--. 1 lzuccarelli lzuccarelli  2848 Dec 22 13:28 .golangci.yaml
--rw-r--r--. 1 lzuccarelli lzuccarelli   193 Dec 22 13:28 go.mod
--rw-r--r--. 1 lzuccarelli lzuccarelli 40243 Dec 22 13:28 go.sum
--rw-r--r--. 1 lzuccarelli lzuccarelli   812 Dec 22 13:28 Makefile
-drwxr-xr-x. 6 lzuccarelli lzuccarelli  4096 Dec 22 13:28 pkg
--rw-r--r--. 1 lzuccarelli lzuccarelli   247 Dec 22 13:28 README.md
--rwxr-xr-x. 1 lzuccarelli lzuccarelli   156 Dec 22 13:28 run.sh
-drwxr-xr-x. 2 lzuccarelli lzuccarelli  4096 Dec 22 13:28 templates
-drwxr-xr-x. 3 lzuccarelli lzuccarelli  4096 Dec 22 13:28 tests
--rwxr-xr-x. 1 lzuccarelli lzuccarelli   199 Dec 22 13:28 uid_entrypoint.sh
+drwxr-xr-x. 8 lzuccarelli lzuccarelli  4096 Dec 22 14:07 .
+drwxr-xr-x. 3 lzuccarelli lzuccarelli  4096 Dec 22 14:07 ..
+drwxr-xr-x. 2 lzuccarelli lzuccarelli  4096 Dec 22 14:07 .cicd
+drwxr-xr-x. 3 lzuccarelli lzuccarelli  4096 Dec 22 14:07 cmd
+-rw-r--r--. 1 lzuccarelli lzuccarelli   458 Dec 22 14:07 Dockerfile
+drwxr-xr-x. 8 lzuccarelli lzuccarelli  4096 Dec 22 14:07 .git
+-rw-r--r--. 1 lzuccarelli lzuccarelli    20 Dec 22 14:07 .gitignore
+-rw-r--r--. 1 lzuccarelli lzuccarelli   782 Dec 22 14:07 golangci-example.yaml
+-rw-r--r--. 1 lzuccarelli lzuccarelli  2848 Dec 22 14:07 .golangci.yaml
+-rw-r--r--. 1 lzuccarelli lzuccarelli   193 Dec 22 14:07 go.mod
+-rw-r--r--. 1 lzuccarelli lzuccarelli 40243 Dec 22 14:07 go.sum
+-rw-r--r--. 1 lzuccarelli lzuccarelli   812 Dec 22 14:07 Makefile
+drwxr-xr-x. 6 lzuccarelli lzuccarelli  4096 Dec 22 14:07 pkg
+-rw-r--r--. 1 lzuccarelli lzuccarelli   247 Dec 22 14:07 README.md
+-rwxr-xr-x. 1 lzuccarelli lzuccarelli   156 Dec 22 14:07 run.sh
+drwxr-xr-x. 2 lzuccarelli lzuccarelli  4096 Dec 22 14:07 templates
+drwxr-xr-x. 3 lzuccarelli lzuccarelli  4096 Dec 22 14:07 tests
+-rwxr-xr-x. 1 lzuccarelli lzuccarelli   199 Dec 22 14:07 uid_entrypoint.sh
 golangci-lint run -c .golangci.yaml --deadline=30m
 go test -v -coverprofile=tests/results/cover.out -tags fake ./...
 ?   	lmzsoftware.com/lzuccarelli/golang-simple-echoservice/cmd/microservice	[no test files]
@@ -27,7 +27,7 @@ go test -v -coverprofile=tests/results/cover.out -tags fake ./...
 === RUN   TestAllMiddleware/EchoHandler_:_should_pass
 === RUN   TestAllMiddleware/EchoHandler_:_should_fail_(force_readall_error)
 === RUN   TestAllMiddleware/EchoHandler_:_should_fail_(bad_json)
-2022/12/22 13:28:17 [1;31m [ERROR] [0m : EchoHandler could not unmarshal input data from json to schema unexpected end of JSON input
+2022/12/22 14:07:24 [1;31m [ERROR] [0m : EchoHandler could not unmarshal input data from json to schema unexpected end of JSON input
 --- PASS: TestAllMiddleware (0.00s)
     --- PASS: TestAllMiddleware/IsAlive_:_should_pass (0.00s)
     --- PASS: TestAllMiddleware/EchoHandler_:_should_pass (0.00s)
@@ -39,17 +39,17 @@ ok  	lmzsoftware.com/lzuccarelli/golang-simple-echoservice/pkg/handlers	0.003s	c
 ?   	lmzsoftware.com/lzuccarelli/golang-simple-echoservice/pkg/schema	[no test files]
 === RUN   TestEnvars
 === RUN   TestEnvars/ValidateEnvars_:_should_fail
-2022/12/22 13:28:17 [1;36m [TRACE] [0m : Input parameters -> name LOG_LEVEL : required false
-2022/12/22 13:28:17 [1;31m [ERROR] [0m : LOG_LEVEL envar is empty please set it
-2022/12/22 13:28:17 [1;36m [TRACE] [0m : Input parameters -> name NAME : required false
-2022/12/22 13:28:17 [1;31m [ERROR] [0m : NAME envar is empty please set it
-2022/12/22 13:28:17 [1;36m [TRACE] [0m : Input parameters -> name SERVER_PORT : required true
-2022/12/22 13:28:17 [1;31m [ERROR] [0m : SERVER_PORT envar is mandatory please set it
+2022/12/22 14:07:24 [1;36m [TRACE] [0m : Input parameters -> name LOG_LEVEL : required false
+2022/12/22 14:07:24 [1;31m [ERROR] [0m : LOG_LEVEL envar is empty please set it
+2022/12/22 14:07:24 [1;36m [TRACE] [0m : Input parameters -> name NAME : required false
+2022/12/22 14:07:24 [1;31m [ERROR] [0m : NAME envar is empty please set it
+2022/12/22 14:07:24 [1;36m [TRACE] [0m : Input parameters -> name SERVER_PORT : required true
+2022/12/22 14:07:24 [1;31m [ERROR] [0m : SERVER_PORT envar is mandatory please set it
 === RUN   TestEnvars/ValidateEnvars_:_should_pass
-2022/12/22 13:28:17 [1;36m [TRACE] [0m : Input parameters -> name LOG_LEVEL : required false
-2022/12/22 13:28:17 [1;36m [TRACE] [0m : Input parameters -> name NAME : required false
-2022/12/22 13:28:17 [1;36m [TRACE] [0m : Input parameters -> name SERVER_PORT : required true
-2022/12/22 13:28:17 [1;36m [TRACE] [0m : Input parameters -> name VERSION : required true
+2022/12/22 14:07:24 [1;36m [TRACE] [0m : Input parameters -> name LOG_LEVEL : required false
+2022/12/22 14:07:24 [1;36m [TRACE] [0m : Input parameters -> name NAME : required false
+2022/12/22 14:07:24 [1;36m [TRACE] [0m : Input parameters -> name SERVER_PORT : required true
+2022/12/22 14:07:24 [1;36m [TRACE] [0m : Input parameters -> name VERSION : required true
 --- PASS: TestEnvars (0.00s)
     --- PASS: TestEnvars/ValidateEnvars_:_should_fail (0.00s)
     --- PASS: TestEnvars/ValidateEnvars_:_should_pass (0.00s)

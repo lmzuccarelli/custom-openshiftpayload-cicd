@@ -10,6 +10,7 @@ import (
 	"github.com/lmzuccarelli/custom-tekton-emulator-cicd/pkg/schema"
 )
 
+// ExecutePipeline - executes a given set of taskruns pointing to a specific pipeline
 func ExecutePipeline(path, trFilter string, c connectors.Clients) error {
 
 	var p schema.Pipeline
@@ -22,7 +23,10 @@ func ExecutePipeline(path, trFilter string, c connectors.Clients) error {
 		return err
 	}
 
-	os.Chdir(path)
+	err = os.Chdir(path)
+	if err != nil {
+		return err
+	}
 	// read the main kustomization yaml file
 	hldK, err := yamlToStruct("./kustomization.yaml", schema.Kustomization{})
 	k, ok := hldK.(schema.Kustomization)
@@ -33,7 +37,10 @@ func ExecutePipeline(path, trFilter string, c connectors.Clients) error {
 
 	// get all the relevant files to load
 	for _, f := range k.Bases {
-		os.Chdir(f)
+		err := os.Chdir(f)
+		if err != nil {
+			return err
+		}
 		subK, err := yamlToStruct("./kustomization.yaml", schema.Kustomization{})
 		k, ok := subK.(schema.Kustomization)
 		if err != nil && !ok {
@@ -93,24 +100,29 @@ func ExecutePipeline(path, trFilter string, c connectors.Clients) error {
 
 	// we now execute the pipeline from the taskruns
 	for _, taskrun := range tr {
-		mergeParams(&taskrun, &p)
-		task := findRelatedTask(t, taskrun.Spec.TaskRef.Name)
-		if reflect.DeepEqual(task, schema.Task{}) {
-			return fmt.Errorf("no related task '%s' found to execute", taskrun.Spec.TaskRef.Name)
-		}
-		newTask := deepCopyTask(task)
-		updateParameters(newTask, taskrun)
-		for _, step := range newTask.Spec.Steps {
-			c.Info("executing %s for %s", step.Name, taskrun.Metadata.Name)
-			err := c.ExecOS(basePath+"/"+p.Spec.Workspaces[0].Name+"/"+step.Workspace, step.Command[0], step.Args, true)
-			if err != nil {
-				return err
+		if len(taskrun.Metadata.Name) != 0 {
+			mergeParams(&taskrun, &p)
+			task := findRelatedTask(t, taskrun.Spec.TaskRef.Name)
+			if reflect.DeepEqual(task, schema.Task{}) {
+				return fmt.Errorf("no related task '%s' found to execute", taskrun.Spec.TaskRef.Name)
 			}
+			newTask := deepCopyTask(task)
+			updateParameters(newTask, taskrun)
+			for _, step := range newTask.Spec.Steps {
+				c.Info("executing %s for %s", step.Name, taskrun.Metadata.Name)
+				err := c.ExecOS(basePath+"/"+p.Spec.Workspaces[0].Name+"/"+step.Workspace, step.Command[0], step.Args, true)
+				if err != nil {
+					return err
+				}
+			}
+		} else {
+			c.Info("found empty taskrun")
 		}
 	}
 	return nil
 }
 
+// GenerateTaskRunFiles - generates taskrun file from a set of buildconfig files in a directory
 func GenerateTaskRunFiles(path, dstPath string) error {
 	bcs, err := readAllBuildConfigs(path)
 	if err != nil {
