@@ -10,12 +10,17 @@ import (
 	"github.com/lmzuccarelli/custom-tekton-emulator-cicd/pkg/schema"
 )
 
-func ExecutePipeline(path string, c connectors.Clients) error {
+func ExecutePipeline(path, trFilter string, c connectors.Clients) error {
 
 	var p schema.Pipeline
 	var t []schema.Task
 	var tr []schema.TaskRun
 	var ok bool
+
+	basePath, err := os.Getwd()
+	if err != nil {
+		return err
+	}
 
 	os.Chdir(path)
 	// read the main kustomization yaml file
@@ -51,12 +56,12 @@ func ExecutePipeline(path string, c connectors.Clients) error {
 				p.Spec.Workspaces = append(p.Spec.Workspaces, schema.Workspace{Name: "./working-dir"})
 			}
 			c.Info("deleting working directory %s", p.Spec.Workspaces[0].Name)
-			err = os.RemoveAll(p.Spec.Workspaces[0].Name)
+			err = os.RemoveAll(basePath + "/" + p.Spec.Workspaces[0].Name)
 			if err != nil {
 				return err
 			}
 			c.Info("creating working directory %s", p.Spec.Workspaces[0].Name)
-			err = os.MkdirAll(p.Spec.Workspaces[0].Name, os.ModePerm)
+			err = os.MkdirAll(basePath+"/"+p.Spec.Workspaces[0].Name, os.ModePerm)
 			if err != nil {
 				return err
 			}
@@ -78,6 +83,14 @@ func ExecutePipeline(path string, c connectors.Clients) error {
 		}
 	}
 
+	if len(trFilter) > 0 {
+		tmp := findRelatedTaskRun(tr, trFilter)
+		c.Info("found taskrun to filter %s", trFilter)
+		c.Trace("found taskrun to filter %s %v", trFilter, tmp)
+		tr = []schema.TaskRun{}
+		tr = append(tr, tmp)
+	}
+
 	// we now execute the pipeline from the taskruns
 	for _, taskrun := range tr {
 		mergeParams(&taskrun, &p)
@@ -89,7 +102,7 @@ func ExecutePipeline(path string, c connectors.Clients) error {
 		updateParameters(newTask, taskrun)
 		for _, step := range newTask.Spec.Steps {
 			c.Info("executing %s for %s", step.Name, taskrun.Metadata.Name)
-			err := c.ExecOS(p.Spec.Workspaces[0].Name+"/"+step.Workspace, step.Command[0], step.Args, true)
+			err := c.ExecOS(basePath+"/"+p.Spec.Workspaces[0].Name+"/"+step.Workspace, step.Command[0], step.Args, true)
 			if err != nil {
 				return err
 			}

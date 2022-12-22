@@ -15,14 +15,14 @@ func TestExecutePipeline(t *testing.T) {
 	client := connectors.NewClientConnections(logger)
 	workingDir, _ = os.Getwd()
 	t.Run("Testing ExecutePipeline : should pass", func(t *testing.T) {
-		err := ExecutePipeline("../../tests/config", client)
+		err := ExecutePipeline("../../tests/config", "", client)
 		if err != nil {
 			t.Fatalf("Should not fail : found error %v", err)
 		}
 	})
 
 	t.Run("Testing ExecutePipeline : should pass", func(t *testing.T) {
-		err := ExecutePipeline("../../tests/config-bad", client)
+		err := ExecutePipeline("../../tests/config-bad", "", client)
 		if err != nil {
 			t.Fatalf("Should not fail : found error %v", err)
 		}

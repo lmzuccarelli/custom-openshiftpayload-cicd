@@ -1,0 +1,23 @@
+
+kind: TaskRun
+apiVersion: 0.0.1
+metadata:
+  name: golang-simple-echoservice
+spec:
+  taskRef:
+    name: custom-openshift-build
+  params:
+    - name: repository-url
+      value: 'https://github.com/luigizuccarelli/golang-simple-echoservice'
+    - name: repository-name
+      value: 'golang-simple-echoservice'
+    - name: branch
+      value: 'master'
+    - name: dockerfile
+      value: './Dockerfile'
+    - name: tag-version
+      value: 'v0.0.2'
+    - name: base-registry
+      value: 'quay.io/luzuccar'
+    - name: authfile
+      value: '/home/lzuccarelli/.docker/config.json'

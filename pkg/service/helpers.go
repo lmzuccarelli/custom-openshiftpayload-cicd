@@ -41,6 +41,7 @@ spec:
       value: '{{ .Dockerfile }}'
 `
 
+// deepCopyTask - creates a deep copy of a Task
 func deepCopyTask(task schema.Task) schema.Task {
 	t := schema.Task{}
 	t.Kind = task.Kind
@@ -66,12 +67,14 @@ func deepCopyTask(task schema.Task) schema.Task {
 	return t
 }
 
+// mergeParams - merges a set of parameters into a common set
 func mergeParams(tr *schema.TaskRun, pt *schema.Pipeline) {
 	for _, p := range pt.Spec.Params {
 		tr.Spec.Params = append(tr.Spec.Params, schema.Param{Name: p.Name, Value: p.Default})
 	}
 }
 
+// updateParams - update all pramateres in the form of ${param.name}
 func updateParameters(task schema.Task, taskrun schema.TaskRun) {
 	for x, step := range task.Spec.Steps {
 		for y, arg := range step.Args {
@@ -85,6 +88,7 @@ func updateParameters(task schema.Task, taskrun schema.TaskRun) {
 	}
 }
 
+// replaceWithParamValue - replaces a parameter with a specific value
 func replaceWithParamValue(task schema.TaskRun, value string) string {
 	newValue := value
 	for _, param := range task.Spec.Params {
@@ -93,6 +97,7 @@ func replaceWithParamValue(task schema.TaskRun, value string) string {
 	return newValue
 }
 
+// findRelatedTask - find a specific task in an array of tasks
 func findRelatedTask(tasks []schema.Task, reference string) schema.Task {
 	for _, task := range tasks {
 		if reference == task.Metadata.Name {
@@ -102,6 +107,17 @@ func findRelatedTask(tasks []schema.Task, reference string) schema.Task {
 	return schema.Task{}
 }
 
+// findRelatedTaskRun - find a specific taskrun in an array of taskruns
+func findRelatedTaskRun(taskruns []schema.TaskRun, reference string) schema.TaskRun {
+	for _, taskrun := range taskruns {
+		if reference == taskrun.Metadata.Name {
+			return taskrun
+		}
+	}
+	return schema.TaskRun{}
+}
+
+// readAllTaskFiles - read all tasks in a directory
 func readAllTaskFiles(dir string, files []string) ([]schema.Task, error) {
 	var tasks []schema.Task
 	for _, f := range files {
@@ -115,6 +131,7 @@ func readAllTaskFiles(dir string, files []string) ([]schema.Task, error) {
 	return tasks, nil
 }
 
+// readAllTaskRunFiles - read all taskruns in a directory
 func readAllTaskRunFiles(dir string, files []string) ([]schema.TaskRun, error) {
 	var taskruns []schema.TaskRun
 	var tr schema.TaskRun
@@ -156,6 +173,7 @@ func readAllBuildConfigs(dir string) ([]schema.BuildConfig, error) {
 	return bcs, nil
 }
 
+// generateTaskRunFiles - creates a set of taskrun files in a given directory from buildconfigs
 func generateTaskRunFiles(dir string, bcs []schema.BuildConfig) error {
 	for _, bc := range bcs {
 		schema := &schema.TemplateSchema{Name: filepath.Base(bc.Spec.Source.Git.URI), GitURL: bc.Spec.Source.Git.URI, Dockerfile: bc.Spec.Strategy.DockerStrategy.DockerfilePath, TaskRef: "custom-openshift-build"}
@@ -172,6 +190,7 @@ func generateTaskRunFiles(dir string, bcs []schema.BuildConfig) error {
 	return nil
 }
 
+// yamlToStruct - generic utility that creates a struct from a given yaml file
 func yamlToStruct(file string, strctType interface{}) (interface{}, error) {
 	yfile, err := ioutil.ReadFile(file)
 	if err != nil {

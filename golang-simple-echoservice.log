@@ -1,0 +1,95 @@
+/home/lzuccarelli/Projects/custom-tekton-emulator-cicd/working-dir/golang-simple-echoservice
+total 108
+drwxr-xr-x. 8 lzuccarelli lzuccarelli  4096 Dec 22 13:28 .
+drwxr-xr-x. 3 lzuccarelli lzuccarelli  4096 Dec 22 13:28 ..
+drwxr-xr-x. 2 lzuccarelli lzuccarelli  4096 Dec 22 13:28 .cicd
+drwxr-xr-x. 3 lzuccarelli lzuccarelli  4096 Dec 22 13:28 cmd
+-rw-r--r--. 1 lzuccarelli lzuccarelli   458 Dec 22 13:28 Dockerfile
+drwxr-xr-x. 8 lzuccarelli lzuccarelli  4096 Dec 22 13:28 .git
+-rw-r--r--. 1 lzuccarelli lzuccarelli    20 Dec 22 13:28 .gitignore
+-rw-r--r--. 1 lzuccarelli lzuccarelli   782 Dec 22 13:28 golangci-example.yaml
+-rw-r--r--. 1 lzuccarelli lzuccarelli  2848 Dec 22 13:28 .golangci.yaml
+-rw-r--r--. 1 lzuccarelli lzuccarelli   193 Dec 22 13:28 go.mod
+-rw-r--r--. 1 lzuccarelli lzuccarelli 40243 Dec 22 13:28 go.sum
+-rw-r--r--. 1 lzuccarelli lzuccarelli   812 Dec 22 13:28 Makefile
+drwxr-xr-x. 6 lzuccarelli lzuccarelli  4096 Dec 22 13:28 pkg
+-rw-r--r--. 1 lzuccarelli lzuccarelli   247 Dec 22 13:28 README.md
+-rwxr-xr-x. 1 lzuccarelli lzuccarelli   156 Dec 22 13:28 run.sh
+drwxr-xr-x. 2 lzuccarelli lzuccarelli  4096 Dec 22 13:28 templates
+drwxr-xr-x. 3 lzuccarelli lzuccarelli  4096 Dec 22 13:28 tests
+-rwxr-xr-x. 1 lzuccarelli lzuccarelli   199 Dec 22 13:28 uid_entrypoint.sh
+golangci-lint run -c .golangci.yaml --deadline=30m
+go test -v -coverprofile=tests/results/cover.out -tags fake ./...
+?   	lmzsoftware.com/lzuccarelli/golang-simple-echoservice/cmd/microservice	[no test files]
+?   	lmzsoftware.com/lzuccarelli/golang-simple-echoservice/pkg/connectors	[no test files]
+=== RUN   TestAllMiddleware
+=== RUN   TestAllMiddleware/IsAlive_:_should_pass
+=== RUN   TestAllMiddleware/EchoHandler_:_should_pass
+=== RUN   TestAllMiddleware/EchoHandler_:_should_fail_(force_readall_error)
+=== RUN   TestAllMiddleware/EchoHandler_:_should_fail_(bad_json)
+2022/12/22 13:28:17 [1;31m [ERROR] [0m : EchoHandler could not unmarshal input data from json to schema unexpected end of JSON input
+--- PASS: TestAllMiddleware (0.00s)
+    --- PASS: TestAllMiddleware/IsAlive_:_should_pass (0.00s)
+    --- PASS: TestAllMiddleware/EchoHandler_:_should_pass (0.00s)
+    --- PASS: TestAllMiddleware/EchoHandler_:_should_fail_(force_readall_error) (0.00s)
+    --- PASS: TestAllMiddleware/EchoHandler_:_should_fail_(bad_json) (0.00s)
+PASS
+coverage: 81.1% of statements
+ok  	lmzsoftware.com/lzuccarelli/golang-simple-echoservice/pkg/handlers	0.003s	coverage: 81.1% of statements
+?   	lmzsoftware.com/lzuccarelli/golang-simple-echoservice/pkg/schema	[no test files]
+=== RUN   TestEnvars
+=== RUN   TestEnvars/ValidateEnvars_:_should_fail
+2022/12/22 13:28:17 [1;36m [TRACE] [0m : Input parameters -> name LOG_LEVEL : required false
+2022/12/22 13:28:17 [1;31m [ERROR] [0m : LOG_LEVEL envar is empty please set it
+2022/12/22 13:28:17 [1;36m [TRACE] [0m : Input parameters -> name NAME : required false
+2022/12/22 13:28:17 [1;31m [ERROR] [0m : NAME envar is empty please set it
+2022/12/22 13:28:17 [1;36m [TRACE] [0m : Input parameters -> name SERVER_PORT : required true
+2022/12/22 13:28:17 [1;31m [ERROR] [0m : SERVER_PORT envar is mandatory please set it
+=== RUN   TestEnvars/ValidateEnvars_:_should_pass
+2022/12/22 13:28:17 [1;36m [TRACE] [0m : Input parameters -> name LOG_LEVEL : required false
+2022/12/22 13:28:17 [1;36m [TRACE] [0m : Input parameters -> name NAME : required false
+2022/12/22 13:28:17 [1;36m [TRACE] [0m : Input parameters -> name SERVER_PORT : required true
+2022/12/22 13:28:17 [1;36m [TRACE] [0m : Input parameters -> name VERSION : required true
+--- PASS: TestEnvars (0.00s)
+    --- PASS: TestEnvars/ValidateEnvars_:_should_fail (0.00s)
+    --- PASS: TestEnvars/ValidateEnvars_:_should_pass (0.00s)
+PASS
+coverage: 100.0% of statements
+ok  	lmzsoftware.com/lzuccarelli/golang-simple-echoservice/pkg/validator	0.002s	coverage: 100.0% of statements
+mkdir -p build
+go build -o build -tags real ./...
+STEP 1/11: FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
+STEP 2/11: LABEL maintainer="luigizuccarelli@gmail.com"
+--> Using cache a7b00d0891d0ba8142c63a8ba6e80551e8c0da635b7004ea31af158cbfabf2c7
+--> a7b00d0891d
+STEP 3/11: ENV GOPATH /go
+--> Using cache 6effecf3f3a8ac2e1d60416fe9665f1314d7b0cb5fd78ffb76bd6612b77b643b
+--> 6effecf3f3a
+STEP 4/11: ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
+--> Using cache 4f93afe206a5d58dbdcd90d072579e4c459362c0ddb170776e9047cc21dd86c4
+--> 4f93afe206a
+STEP 5/11: COPY build/microservice uid_entrypoint.sh /go/ 
+--> Using cache 70930704d4a4af76c496f151f982a7d346c403d56c872c20cc325e27bd9d9ae9
+--> 70930704d4a
+STEP 6/11: RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 0755 "$GOPATH"
+--> Using cache c53716d5d6b6cac929598900236bc785f265a5ffd164edf4d7a74953f534a6a2
+--> c53716d5d6b
+STEP 7/11: RUN chown -R 1001:root /go
+--> Using cache d6246791c3c4394e2d0c87d3a90ded279069f10a6d590d8915f0e66be39db668
+--> d6246791c3c
+STEP 8/11: WORKDIR $GOPATH
+--> Using cache dee15dddfe797368736df3a6e6379cbadf14186f39e55e840e971ffbf940dbd4
+--> dee15dddfe7
+STEP 9/11: USER 1001
+--> Using cache 888cf066871b7ef6685a79d964ea00e2d41f01eb64563ecf4f684b65d318de78
+--> 888cf066871
+STEP 10/11: ENTRYPOINT [ "./uid_entrypoint.sh" ]
+--> Using cache ff33d77710c31a3b6a88da619176e8b66ade349c80f2e711d8057f995f9fd9e3
+--> ff33d77710c
+STEP 11/11: CMD ["./microservice"]
+--> Using cache 6622c9e4e5e86362ed16b2eaa9aea53d39d579462d15f78c3392bc780fb67a64
+COMMIT quay.io/luzuccar/golang-simple-echoservice:v0.0.2
+--> 6622c9e4e5e
+Successfully tagged quay.io/luzuccar/golang-simple-echoservice:v0.0.2
+Successfully tagged quay.io/luzuccar/golang-simple-echoservice/golang-simple-echoservice:v0.0.2
+6622c9e4e5e86362ed16b2eaa9aea53d39d579462d15f78c3392bc780fb67a64

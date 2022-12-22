@@ -13,26 +13,41 @@ spec:
         - 'clone'
         - '${params.repository-url}'
         - '--progress'
-    - name: update-dockerfile-builder
+    - name: pwd
+      description: 'print working directory'
       workspace: ${params.repository-name}
-      description: 'update dockerfile builder'
-      command:
-        - sed 
+      command: 
+        - pwd
       args:
-        - '-E'
-        - '-i'
-        - 's/^FROM(.)*builder$/FROM quay.io\/luzuccar\/golang-toolset:dev AS builder/' 
-        - '${params.dockerfile}'
-    - name: update-dockerfile-base
+        - ''
+    - name: ls
       workspace: ${params.repository-name}
-      description: 'update dockerfile base'
-      command:
-        - sed 
+      description: 'list current directory'
+      command: 
+        - ls
       args:
-        - '-E'
-        - '-i'
-        - 's/^FROM(.)*base$/FROM quay.io\/luzuccar\/base:latest/'
-        - '${params.dockerfile}'
+        - '-la'
+    - name: verify
+      workspace: ${params.repository-name}
+      description: 'verify'
+      command: 
+        - make
+      args:
+        - 'verify'
+    - name: unit-test
+      workspace: ${params.repository-name}
+      description: 'unit test'
+      command: 
+        - make
+      args:
+        - 'test'
+    - name: build
+      workspace: ${params.repository-name}
+      description: 'build'
+      command: 
+        - make
+      args:
+        - 'build'
     - name: container-build
       workspace: ${params.repository-name}
       description: 'container build'
@@ -53,4 +68,4 @@ spec:
         - 'push'
         - '${params.base-registry}/${params.repository-name}:${params.tag-version}'
         - '--tls-verify=false'
-        #- '--authfile=/home/lzuccarelli/.docker/config.json'
+        - '--authfile=${params.authfile}'
