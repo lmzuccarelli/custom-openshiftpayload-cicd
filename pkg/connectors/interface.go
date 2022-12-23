@@ -6,5 +6,5 @@ type Clients interface {
 	Info(string, ...interface{})
 	Debug(string, ...interface{})
 	Trace(string, ...interface{})
-	ExecOS(path string, command string, params []string, trim bool) error
+	ExecOS(path string, command string, params []string, logFile string) error
 }

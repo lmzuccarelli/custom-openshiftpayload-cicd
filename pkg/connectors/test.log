@@ -1,0 +1,41 @@
+total 20
+drwxr-xr-x. 2 lzuccarelli lzuccarelli 4096 Dec 23 09:31 .
+drwxr-xr-x. 5 lzuccarelli lzuccarelli 4096 Dec 22 09:44 ..
+-rw-r--r--. 1 lzuccarelli lzuccarelli 1317 Dec 22 16:42 implementation.go
+-rw-r--r--. 1 lzuccarelli lzuccarelli  840 Dec 23 09:31 implementation_test.go
+-rw-r--r--. 1 lzuccarelli lzuccarelli  321 Dec 22 16:44 interface.go
+total 24
+drwxr-xr-x. 2 lzuccarelli lzuccarelli 4096 Dec 23 09:31 .
+drwxr-xr-x. 5 lzuccarelli lzuccarelli 4096 Dec 22 09:44 ..
+-rw-r--r--. 1 lzuccarelli lzuccarelli 1317 Dec 22 16:42 implementation.go
+-rw-r--r--. 1 lzuccarelli lzuccarelli  840 Dec 23 09:31 implementation_test.go
+-rw-r--r--. 1 lzuccarelli lzuccarelli  321 Dec 22 16:44 interface.go
+-rw-r--r--. 1 lzuccarelli lzuccarelli  348 Dec 23 09:31 test.log
+total 24
+drwxr-xr-x. 2 lzuccarelli lzuccarelli 4096 Dec 23 09:31 .
+drwxr-xr-x. 5 lzuccarelli lzuccarelli 4096 Dec 22 09:44 ..
+-rw-r--r--. 1 lzuccarelli lzuccarelli 1317 Dec 22 16:42 implementation.go
+-rw-r--r--. 1 lzuccarelli lzuccarelli  840 Dec 23 09:31 implementation_test.go
+-rw-r--r--. 1 lzuccarelli lzuccarelli  321 Dec 22 16:44 interface.go
+-rw-r--r--. 1 lzuccarelli lzuccarelli  761 Dec 23 09:42 test.log
+total 24
+drwxr-xr-x. 2 lzuccarelli lzuccarelli 4096 Dec 23 09:31 .
+drwxr-xr-x. 5 lzuccarelli lzuccarelli 4096 Dec 22 09:44 ..
+-rw-r--r--. 1 lzuccarelli lzuccarelli 1317 Dec 22 16:42 implementation.go
+-rw-r--r--. 1 lzuccarelli lzuccarelli  840 Dec 23 09:31 implementation_test.go
+-rw-r--r--. 1 lzuccarelli lzuccarelli  321 Dec 22 16:44 interface.go
+-rw-r--r--. 1 lzuccarelli lzuccarelli 1174 Dec 23 09:45 test.log
+total 24
+drwxr-xr-x. 2 lzuccarelli lzuccarelli 4096 Dec 23 09:31 .
+drwxr-xr-x. 5 lzuccarelli lzuccarelli 4096 Dec 22 09:44 ..
+-rw-r--r--. 1 lzuccarelli lzuccarelli 1317 Dec 22 16:42 implementation.go
+-rw-r--r--. 1 lzuccarelli lzuccarelli  840 Dec 23 09:31 implementation_test.go
+-rw-r--r--. 1 lzuccarelli lzuccarelli  321 Dec 22 16:44 interface.go
+-rw-r--r--. 1 lzuccarelli lzuccarelli 1587 Dec 23 09:55 test.log
+total 24
+drwxr-xr-x. 2 lzuccarelli lzuccarelli 4096 Dec 23 09:31 .
+drwxr-xr-x. 5 lzuccarelli lzuccarelli 4096 Dec 22 09:44 ..
+-rw-r--r--. 1 lzuccarelli lzuccarelli 1317 Dec 22 16:42 implementation.go
+-rw-r--r--. 1 lzuccarelli lzuccarelli  840 Dec 23 09:31 implementation_test.go
+-rw-r--r--. 1 lzuccarelli lzuccarelli  321 Dec 22 16:44 interface.go
+-rw-r--r--. 1 lzuccarelli lzuccarelli 2000 Dec 23 09:57 test.log

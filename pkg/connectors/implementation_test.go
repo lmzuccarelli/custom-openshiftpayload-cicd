@@ -18,9 +18,16 @@ func TestAllConnectors(t *testing.T) {
 	client.Trace("test %s", "simple")
 	client.Error("test %s", "simple")
 	t.Run("Testing ExecutePipeline : should pass", func(t *testing.T) {
-		err := client.ExecOS(".", "ls", []string{"-la"}, true)
+		err := client.ExecOS(".", "ls", []string{"-la"}, "")
 		if err != nil {
 			t.Fatalf("Should not fail : found error %v", err)
 		}
 	})
+	t.Run("Testing ExecutePipeline : should pass (log to file))", func(t *testing.T) {
+		err := client.ExecOS(".", "ls", []string{"-la"}, "test.log")
+		if err != nil {
+			t.Fatalf("Should not fail : found error %v", err)
+		}
+	})
+
 }

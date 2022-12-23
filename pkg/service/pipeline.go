@@ -11,16 +11,21 @@ import (
 )
 
 // ExecutePipeline - executes a given set of taskruns pointing to a specific pipeline
-func ExecutePipeline(path, trFilter string, c connectors.Clients) error {
+func ExecutePipeline(path, trFilter, logFile string, c connectors.Clients) error {
 
 	var p schema.Pipeline
 	var t []schema.Task
 	var tr []schema.TaskRun
+	var logToFile string
 	var ok bool
 
 	basePath, err := os.Getwd()
 	if err != nil {
 		return err
+	}
+
+	if len(logFile) > 0 {
+		logToFile = basePath + "/logs/" + logFile
 	}
 
 	err = os.Chdir(path)
@@ -110,7 +115,7 @@ func ExecutePipeline(path, trFilter string, c connectors.Clients) error {
 			updateParameters(newTask, taskrun)
 			for _, step := range newTask.Spec.Steps {
 				c.Info("executing %s for %s", step.Name, taskrun.Metadata.Name)
-				err := c.ExecOS(basePath+"/"+p.Spec.Workspaces[0].Name+"/"+step.Workspace, step.Command[0], step.Args, true)
+				err := c.ExecOS(basePath+"/"+p.Spec.Workspaces[0].Name+"/"+step.Workspace, step.Command[0], step.Args, logToFile)
 				if err != nil {
 					return err
 				}

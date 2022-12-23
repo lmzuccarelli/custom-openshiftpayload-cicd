@@ -3,7 +3,7 @@ package service
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -54,12 +54,12 @@ func deepCopyTask(task schema.Task) schema.Task {
 		args := []string{}
 		s.Name = step.Name
 		s.Description = step.Description
-		for _, s := range step.Command {
-			cmd = append(cmd, s)
-		}
-		for _, a := range step.Args {
-			args = append(args, a)
-		}
+		//for _, s := range step.Command {
+		cmd = append(cmd, step.Command...)
+		//}
+		//for _, a := range step.Args {
+		args = append(args, step.Args...)
+		//}
 		s.Command = cmd
 		s.Args = args
 		t.Spec.Steps = append(t.Spec.Steps, s)
@@ -151,7 +151,7 @@ func readAllTaskRunFiles(dir string, files []string) ([]schema.TaskRun, error) {
 // readAllBuildConfigs - reads all the BuildConfigs from a given directory
 func readAllBuildConfigs(dir string) ([]schema.BuildConfig, error) {
 	var bcs []schema.BuildConfig
-	files, err := ioutil.ReadDir(dir)
+	files, err := os.ReadDir(dir)
 	if err != nil {
 		return []schema.BuildConfig{}, err
 	}
@@ -181,8 +181,11 @@ func generateTaskRunFiles(dir string, bcs []schema.BuildConfig) error {
 		tmpl := template.New("taskruns")
 		tmp, _ := tmpl.Parse(taskRunTemplate)
 		var tpl bytes.Buffer
-		tmp.Execute(&tpl, schema)
-		err := ioutil.WriteFile(dir+"/"+bc.Metadata.Annotations["fileRef"], tpl.Bytes(), 0755)
+		err := tmp.Execute(&tpl, schema)
+		if err != nil {
+			return err
+		}
+		err = os.WriteFile(dir+"/"+bc.Metadata.Annotations["fileRef"], tpl.Bytes(), 0755)
 		if err != nil {
 			return err
 		}
@@ -192,7 +195,7 @@ func generateTaskRunFiles(dir string, bcs []schema.BuildConfig) error {
 
 // yamlToStruct - generic utility that creates a struct from a given yaml file
 func yamlToStruct(file string, strctType interface{}) (interface{}, error) {
-	yfile, err := ioutil.ReadFile(file)
+	yfile, err := os.ReadFile(file)
 	if err != nil {
 		return strctType, err
 	}

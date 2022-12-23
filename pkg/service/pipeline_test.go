@@ -15,23 +15,30 @@ func TestExecutePipeline(t *testing.T) {
 	client := connectors.NewClientConnections(logger)
 	workingDir, _ = os.Getwd()
 	t.Run("Testing ExecutePipeline : should pass", func(t *testing.T) {
-		err := ExecutePipeline("../../tests/config", "", client)
+		err := ExecutePipeline("../../tests/config", "", "", client)
 		if err != nil {
 			t.Fatalf("Should not fail : found error %v", err)
 		}
 	})
-
+	_ = os.Chdir(workingDir)
 	t.Run("Testing ExecutePipeline : should pass", func(t *testing.T) {
-		err := ExecutePipeline("../../tests/config-bad", "", client)
+		err := ExecutePipeline("../../tests/config-bad", "", "", client)
 		if err != nil {
 			t.Fatalf("Should not fail : found error %v", err)
 		}
 	})
-
+	_ = os.Chdir(workingDir)
+	t.Run("Testing ExecutePipeline : should pass (with filter)", func(t *testing.T) {
+		err := ExecutePipeline("../../tests/config", "images", "", client)
+		if err != nil {
+			t.Fatalf("Should not fail : found error %v", err)
+		}
+	})
 }
 
 func TestGenerateTaskRunFiles(t *testing.T) {
-	os.Chdir(workingDir)
+	// ignore the error for now
+	_ = os.Chdir(workingDir)
 	t.Run("Testing GenerateTaskRunFiles : should pass", func(t *testing.T) {
 		err := GenerateTaskRunFiles("../../tests/buildconfigs", "../../tests/taskruns")
 		if err != nil {

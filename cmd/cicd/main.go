@@ -12,6 +12,7 @@ import (
 
 var (
 	logLevel             string
+	logFile              string
 	kustomizePath        string
 	executeTaskRun       string
 	buildConfigDir       string
@@ -21,6 +22,7 @@ var (
 
 func init() {
 	flag.StringVar(&logLevel, "l", "info", "Set log level [info,debug,trace]")
+	flag.StringVar(&logFile, "f", "", "Capture output to a file")
 	flag.StringVar(&kustomizePath, "k", "", "Path for the initial kustomization file")
 	flag.StringVar(&generateTaskRunFiles, "g", "", "Use this flag to set the destination folder for taskrun object to be saved to")
 	flag.StringVar(&buildConfigDir, "b", "", "Use this flag to generate all runtasks from a given buildconfigs directory")
@@ -53,7 +55,7 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
-	err := service.ExecutePipeline(kustomizePath, executeTaskRun, client)
+	err := service.ExecutePipeline(kustomizePath, executeTaskRun, logFile, client)
 	if err != nil {
 		client.Error("pipeline execution %v", err)
 		os.Exit(1)

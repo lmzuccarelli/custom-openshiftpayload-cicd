@@ -9,6 +9,9 @@ build:
 test:
 	go test -v -coverprofile=tests/results/cover.out ./...
 
+verify:
+	golangci-lint run -c .golangci.yaml --deadline=5m
+
 cover:
 	go tool cover -html=tests/results/cover.out -o tests/results/cover.html
 

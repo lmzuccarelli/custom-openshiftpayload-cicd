@@ -3,7 +3,7 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<title>service: Go Coverage Report</title>
+		<title>connectors: Go Coverage Report</title>
 		<style>
 			body {
 				background: black;
@@ -55,9 +55,11 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">github.com/luigizuccarelli/custom-openshiftpayload-cicd/pkg/service/helpers.go (87.9%)</option>
+				<option value="file0">github.com/lmzuccarelli/custom-tekton-emulator-cicd/pkg/connectors/implementation.go (83.3%)</option>
 				
-				<option value="file1">github.com/luigizuccarelli/custom-openshiftpayload-cicd/pkg/service/pipeline.go (82.0%)</option>
+				<option value="file1">github.com/lmzuccarelli/custom-tekton-emulator-cicd/pkg/service/helpers.go (86.7%)</option>
+				
+				<option value="file2">github.com/lmzuccarelli/custom-tekton-emulator-cicd/pkg/service/pipeline.go (81.0%)</option>
 				
 				</select>
 			</div>
@@ -71,18 +73,88 @@
 		</div>
 		<div id="content">
 		
-		<pre class="file" id="file0" style="display: none">package service
+		<pre class="file" id="file0" style="display: none">package connectors
+
+import (
+        "bytes"
+        "io"
+        "os"
+        "os/exec"
+
+        "github.com/microlib/logger/pkg/multi"
+)
+
+// Connections struct - all backend connections in a common object
+type Connectors struct {
+        Logger *multi.Logger
+}
+
+func NewClientConnections(logger *multi.Logger) Clients <span class="cov8" title="1">{
+        return &amp;Connectors{Logger: logger}
+}</span>
+
+func (c *Connectors) Error(msg string, val ...interface{}) <span class="cov8" title="1">{
+        c.Logger.Errorf(msg, val...)
+}</span>
+
+func (c *Connectors) Info(msg string, val ...interface{}) <span class="cov8" title="1">{
+        c.Logger.Infof(msg, val...)
+}</span>
+
+func (c *Connectors) Debug(msg string, val ...interface{}) <span class="cov8" title="1">{
+        c.Logger.Debugf(msg, val...)
+}</span>
+
+func (c *Connectors) Trace(msg string, val ...interface{}) <span class="cov8" title="1">{
+        c.Logger.Tracef(msg, val...)
+}</span>
+
+func (c *Connectors) ExecOS(path string, command string, params []string, logFile string) error <span class="cov8" title="1">{
+        var out bytes.Buffer
+        multi := io.MultiWriter(os.Stdout, &amp;out)
+        cmd := exec.Command(command, params...)
+        cmd.Dir = path
+        cmd.Stdout = multi
+        cmd.Stderr = multi
+
+        if err := cmd.Start(); err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">if err := cmd.Wait(); err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">if len(logFile) &gt; 0 </span><span class="cov8" title="1">{
+                file, err := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+
+                <span class="cov8" title="1">defer file.Close()
+                _, err = file.WriteString(out.String())
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+        }
+
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package service
 
 import (
         "bytes"
         "fmt"
-        "io/ioutil"
+        "os"
         "path/filepath"
         "reflect"
         "strings"
         "text/template"
 
-        "github.com/luigizuccarelli/custom-openshiftpayload-cicd/pkg/schema"
+        "github.com/lmzuccarelli/custom-tekton-emulator-cicd/pkg/schema"
         "gopkg.in/yaml.v2"
 )
 
@@ -114,6 +186,7 @@ spec:
       value: '{{ .Dockerfile }}'
 `
 
+// deepCopyTask - creates a deep copy of a Task
 func deepCopyTask(task schema.Task) schema.Task <span class="cov8" title="1">{
         t := schema.Task{}
         t.Kind = task.Kind
@@ -126,25 +199,27 @@ func deepCopyTask(task schema.Task) schema.Task <span class="cov8" title="1">{
                 args := []string{}
                 s.Name = step.Name
                 s.Description = step.Description
-                for _, s := range step.Command </span><span class="cov8" title="1">{
-                        cmd = append(cmd, s)
-                }</span>
-                <span class="cov8" title="1">for _, a := range step.Args </span><span class="cov8" title="1">{
-                        args = append(args, a)
-                }</span>
-                <span class="cov8" title="1">s.Command = cmd
+                //for _, s := range step.Command {
+                cmd = append(cmd, step.Command...)
+                //}
+                //for _, a := range step.Args {
+                args = append(args, step.Args...)
+                //}
+                s.Command = cmd
                 s.Args = args
-                t.Spec.Steps = append(t.Spec.Steps, s)</span>
-        }
+                t.Spec.Steps = append(t.Spec.Steps, s)
+        }</span>
         <span class="cov8" title="1">return t</span>
 }
 
+// mergeParams - merges a set of parameters into a common set
 func mergeParams(tr *schema.TaskRun, pt *schema.Pipeline) <span class="cov8" title="1">{
         for _, p := range pt.Spec.Params </span><span class="cov8" title="1">{
                 tr.Spec.Params = append(tr.Spec.Params, schema.Param{Name: p.Name, Value: p.Default})
         }</span>
 }
 
+// updateParams - update all pramateres in the form of ${param.name}
 func updateParameters(task schema.Task, taskrun schema.TaskRun) <span class="cov8" title="1">{
         for x, step := range task.Spec.Steps </span><span class="cov8" title="1">{
                 for y, arg := range step.Args </span><span class="cov8" title="1">{
@@ -158,6 +233,7 @@ func updateParameters(task schema.Task, taskrun schema.TaskRun) <span class="cov
         }
 }
 
+// replaceWithParamValue - replaces a parameter with a specific value
 func replaceWithParamValue(task schema.TaskRun, value string) string <span class="cov8" title="1">{
         newValue := value
         for _, param := range task.Spec.Params </span><span class="cov8" title="1">{
@@ -166,6 +242,7 @@ func replaceWithParamValue(task schema.TaskRun, value string) string <span class
         <span class="cov8" title="1">return newValue</span>
 }
 
+// findRelatedTask - find a specific task in an array of tasks
 func findRelatedTask(tasks []schema.Task, reference string) schema.Task <span class="cov8" title="1">{
         for _, task := range tasks </span><span class="cov8" title="1">{
                 if reference == task.Metadata.Name </span><span class="cov8" title="1">{
@@ -175,6 +252,17 @@ func findRelatedTask(tasks []schema.Task, reference string) schema.Task <span cl
         <span class="cov0" title="0">return schema.Task{}</span>
 }
 
+// findRelatedTaskRun - find a specific taskrun in an array of taskruns
+func findRelatedTaskRun(taskruns []schema.TaskRun, reference string) schema.TaskRun <span class="cov8" title="1">{
+        for _, taskrun := range taskruns </span><span class="cov8" title="1">{
+                if reference == taskrun.Metadata.Name </span><span class="cov0" title="0">{
+                        return taskrun
+                }</span>
+        }
+        <span class="cov8" title="1">return schema.TaskRun{}</span>
+}
+
+// readAllTaskFiles - read all tasks in a directory
 func readAllTaskFiles(dir string, files []string) ([]schema.Task, error) <span class="cov8" title="1">{
         var tasks []schema.Task
         for _, f := range files </span><span class="cov8" title="1">{
@@ -188,6 +276,7 @@ func readAllTaskFiles(dir string, files []string) ([]schema.Task, error) <span c
         <span class="cov8" title="1">return tasks, nil</span>
 }
 
+// readAllTaskRunFiles - read all taskruns in a directory
 func readAllTaskRunFiles(dir string, files []string) ([]schema.TaskRun, error) <span class="cov8" title="1">{
         var taskruns []schema.TaskRun
         var tr schema.TaskRun
@@ -207,7 +296,7 @@ func readAllTaskRunFiles(dir string, files []string) ([]schema.TaskRun, error) <
 // readAllBuildConfigs - reads all the BuildConfigs from a given directory
 func readAllBuildConfigs(dir string) ([]schema.BuildConfig, error) <span class="cov8" title="1">{
         var bcs []schema.BuildConfig
-        files, err := ioutil.ReadDir(dir)
+        files, err := os.ReadDir(dir)
         if err != nil </span><span class="cov0" title="0">{
                 return []schema.BuildConfig{}, err
         }</span>
@@ -220,6 +309,8 @@ func readAllBuildConfigs(dir string) ([]schema.BuildConfig, error) <span class="
                         }</span>
                         // we are only interested in BuildCobcnfigs
                         <span class="cov8" title="1">if bc.Kind == buildConfig </span><span class="cov8" title="1">{
+                                fmap := map[string]string{"fileRef": f.Name()}
+                                bc.Metadata.Annotations = fmap
                                 bcs = append(bcs, bc)
                         }</span>
                 }
@@ -227,6 +318,7 @@ func readAllBuildConfigs(dir string) ([]schema.BuildConfig, error) <span class="
         <span class="cov8" title="1">return bcs, nil</span>
 }
 
+// generateTaskRunFiles - creates a set of taskrun files in a given directory from buildconfigs
 func generateTaskRunFiles(dir string, bcs []schema.BuildConfig) error <span class="cov8" title="1">{
         for _, bc := range bcs </span><span class="cov8" title="1">{
                 schema := &amp;schema.TemplateSchema{Name: filepath.Base(bc.Spec.Source.Git.URI), GitURL: bc.Spec.Source.Git.URI, Dockerfile: bc.Spec.Strategy.DockerStrategy.DockerfilePath, TaskRef: "custom-openshift-build"}
@@ -234,8 +326,11 @@ func generateTaskRunFiles(dir string, bcs []schema.BuildConfig) error <span clas
                 tmpl := template.New("taskruns")
                 tmp, _ := tmpl.Parse(taskRunTemplate)
                 var tpl bytes.Buffer
-                tmp.Execute(&amp;tpl, schema)
-                err := ioutil.WriteFile(dir+"/"+schema.Name+".yaml", tpl.Bytes(), 0755)
+                err := tmp.Execute(&amp;tpl, schema)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov8" title="1">err = os.WriteFile(dir+"/"+bc.Metadata.Annotations["fileRef"], tpl.Bytes(), 0755)
                 if err != nil </span><span class="cov0" title="0">{
                         return err
                 }</span>
@@ -243,8 +338,9 @@ func generateTaskRunFiles(dir string, bcs []schema.BuildConfig) error <span clas
         <span class="cov8" title="1">return nil</span>
 }
 
+// yamlToStruct - generic utility that creates a struct from a given yaml file
 func yamlToStruct(file string, strctType interface{}) (interface{}, error) <span class="cov8" title="1">{
-        yfile, err := ioutil.ReadFile(file)
+        yfile, err := os.ReadFile(file)
         if err != nil </span><span class="cov8" title="1">{
                 return strctType, err
         }</span>
@@ -290,7 +386,7 @@ func yamlToStruct(file string, strctType interface{}) (interface{}, error) <span
 }
 </pre>
 		
-		<pre class="file" id="file1" style="display: none">package service
+		<pre class="file" id="file2" style="display: none">package service
 
 import (
         "fmt"
@@ -298,20 +394,34 @@ import (
         "reflect"
         "strings"
 
-        "github.com/luigizuccarelli/custom-openshiftpayload-cicd/pkg/connectors"
-        "github.com/luigizuccarelli/custom-openshiftpayload-cicd/pkg/schema"
+        "github.com/lmzuccarelli/custom-tekton-emulator-cicd/pkg/connectors"
+        "github.com/lmzuccarelli/custom-tekton-emulator-cicd/pkg/schema"
 )
 
-func ExecutePipeline(path string, c connectors.Clients) error <span class="cov8" title="1">{
+// ExecutePipeline - executes a given set of taskruns pointing to a specific pipeline
+func ExecutePipeline(path, trFilter, logFile string, c connectors.Clients) error <span class="cov8" title="1">{
 
         var p schema.Pipeline
         var t []schema.Task
         var tr []schema.TaskRun
+        var logToFile string
         var ok bool
 
-        os.Chdir(path)
+        basePath, err := os.Getwd()
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">if len(logFile) &gt; 0 </span><span class="cov0" title="0">{
+                logToFile = basePath + "/logs/" + logFile
+        }</span>
+
+        <span class="cov8" title="1">err = os.Chdir(path)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
         // read the main kustomization yaml file
-        hldK, err := yamlToStruct("./kustomization.yaml", schema.Kustomization{})
+        <span class="cov8" title="1">hldK, err := yamlToStruct("./kustomization.yaml", schema.Kustomization{})
         k, ok := hldK.(schema.Kustomization)
         if err != nil &amp;&amp; !ok </span><span class="cov0" title="0">{
                 return err
@@ -320,8 +430,11 @@ func ExecutePipeline(path string, c connectors.Clients) error <span class="cov8"
 
         // get all the relevant files to load
         for _, f := range k.Bases </span><span class="cov8" title="1">{
-                os.Chdir(f)
-                subK, err := yamlToStruct("./kustomization.yaml", schema.Kustomization{})
+                err := os.Chdir(f)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov8" title="1">subK, err := yamlToStruct("./kustomization.yaml", schema.Kustomization{})
                 k, ok := subK.(schema.Kustomization)
                 if err != nil &amp;&amp; !ok </span><span class="cov0" title="0">{
                         return err
@@ -343,12 +456,12 @@ func ExecutePipeline(path string, c connectors.Clients) error <span class="cov8"
                                 p.Spec.Workspaces = append(p.Spec.Workspaces, schema.Workspace{Name: "./working-dir"})
                         }</span>
                         <span class="cov8" title="1">c.Info("deleting working directory %s", p.Spec.Workspaces[0].Name)
-                        err = os.RemoveAll(p.Spec.Workspaces[0].Name)
+                        err = os.RemoveAll(basePath + "/" + p.Spec.Workspaces[0].Name)
                         if err != nil </span><span class="cov0" title="0">{
                                 return err
                         }</span>
                         <span class="cov8" title="1">c.Info("creating working directory %s", p.Spec.Workspaces[0].Name)
-                        err = os.MkdirAll(p.Spec.Workspaces[0].Name, os.ModePerm)
+                        err = os.MkdirAll(basePath+"/"+p.Spec.Workspaces[0].Name, os.ModePerm)
                         if err != nil </span><span class="cov0" title="0">{
                                 return err
                         }</span>
@@ -370,26 +483,39 @@ func ExecutePipeline(path string, c connectors.Clients) error <span class="cov8"
                 }
         }
 
+        <span class="cov8" title="1">if len(trFilter) &gt; 0 </span><span class="cov8" title="1">{
+                tmp := findRelatedTaskRun(tr, trFilter)
+                c.Info("found taskrun to filter %s", trFilter)
+                c.Trace("found taskrun to filter %s %v", trFilter, tmp)
+                tr = []schema.TaskRun{}
+                tr = append(tr, tmp)
+        }</span>
+
         // we now execute the pipeline from the taskruns
         <span class="cov8" title="1">for _, taskrun := range tr </span><span class="cov8" title="1">{
-                mergeParams(&amp;taskrun, &amp;p)
-                task := findRelatedTask(t, taskrun.Spec.TaskRef.Name)
-                if reflect.DeepEqual(task, schema.Task{}) </span><span class="cov0" title="0">{
-                        return fmt.Errorf("no related task '%s' found to execute", taskrun.Spec.TaskRef.Name)
-                }</span>
-                <span class="cov8" title="1">newTask := deepCopyTask(task)
-                updateParameters(newTask, taskrun)
-                for _, step := range newTask.Spec.Steps </span><span class="cov8" title="1">{
-                        c.Info("executing %s for %s", step.Name, taskrun.Metadata.Name)
-                        err := c.ExecOS(p.Spec.Workspaces[0].Name+"/"+step.Workspace, step.Command[0], step.Args, true)
-                        if err != nil </span><span class="cov0" title="0">{
-                                return err
+                if len(taskrun.Metadata.Name) != 0 </span><span class="cov8" title="1">{
+                        mergeParams(&amp;taskrun, &amp;p)
+                        task := findRelatedTask(t, taskrun.Spec.TaskRef.Name)
+                        if reflect.DeepEqual(task, schema.Task{}) </span><span class="cov0" title="0">{
+                                return fmt.Errorf("no related task '%s' found to execute", taskrun.Spec.TaskRef.Name)
                         }</span>
-                }
+                        <span class="cov8" title="1">newTask := deepCopyTask(task)
+                        updateParameters(newTask, taskrun)
+                        for _, step := range newTask.Spec.Steps </span><span class="cov8" title="1">{
+                                c.Info("executing %s for %s", step.Name, taskrun.Metadata.Name)
+                                err := c.ExecOS(basePath+"/"+p.Spec.Workspaces[0].Name+"/"+step.Workspace, step.Command[0], step.Args, logToFile)
+                                if err != nil </span><span class="cov0" title="0">{
+                                        return err
+                                }</span>
+                        }
+                } else<span class="cov8" title="1"> {
+                        c.Info("found empty taskrun")
+                }</span>
         }
         <span class="cov8" title="1">return nil</span>
 }
 
+// GenerateTaskRunFiles - generates taskrun file from a set of buildconfig files in a directory
 func GenerateTaskRunFiles(path, dstPath string) error <span class="cov8" title="1">{
         bcs, err := readAllBuildConfigs(path)
         if err != nil </span><span class="cov0" title="0">{
